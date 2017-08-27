@@ -1,4 +1,6 @@
 package com.nsnc.massdriver.chunk;
 
-public interface ChunkRepository<AI, AT extends Chunk> extends ChunkSink<AI, AT>, ChunkSource<AI, AT> {
+import com.nsnc.massdriver.data.ByteRepository;
+
+public interface ChunkRepository<CI, CT extends Chunk> extends ChunkSink<CI, CT>, ChunkSource<CI, CT>, ByteRepository<CI> {
 }

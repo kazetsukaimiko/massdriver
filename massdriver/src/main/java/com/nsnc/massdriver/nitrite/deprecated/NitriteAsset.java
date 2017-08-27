@@ -1,7 +1,5 @@
-package com.nsnc.massdriver.nitrite;
+package com.nsnc.massdriver.nitrite.deprecated;
 
-import com.jcabi.urn.URN;
-import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.asset.Asset;
 import com.nsnc.massdriver.asset.BaseAsset;
 import com.nsnc.massdriver.Description;

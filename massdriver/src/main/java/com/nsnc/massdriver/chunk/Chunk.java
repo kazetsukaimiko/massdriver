@@ -33,17 +33,17 @@ public interface Chunk {
     public void setPosition(long position);
 
     /**
+     * How large the chunk is.
+     * @return
+     */
+    public int getLength();
+
+    /**
      * A description of this Chunk unique enough to identify it.
      * @return
      */
     public Description getDescription();
     public void setDescription(Description description);
-
-    /**
-     * How long this data is.
-     * @return
-     */
-    public int getLength();
 
 
     /**

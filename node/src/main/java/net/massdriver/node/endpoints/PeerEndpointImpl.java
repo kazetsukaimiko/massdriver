@@ -62,7 +62,7 @@ public class PeerEndpointImpl implements PeerEndpoint {
     }
 
     public static PeerEndpoint ofPeer(Peer peer) {
-        return ClientUtil.getClient(PeerEndpoint.class, peer.getHostname(), peer.getPort());
+        return ClientUtil.getClient(PeerEndpoint.class, peer);
     }
 
     public Peer getMe() {

@@ -1,17 +1,16 @@
 package com.nsnc.massdriver.nitrite;
 
+import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.asset.Asset;
-import com.nsnc.massdriver.asset.AssetRepository;
 import com.nsnc.massdriver.chunk.Chunk;
-import com.nsnc.massdriver.chunk.*;
-import com.nsnc.massdriver.index.IndexRepository;
-import com.nsnc.massdriver.path.uuidByteRepository;
-import com.nsnc.massdriver.data.ByteRepository;
+import com.nsnc.massdriver.chunk.MemoryChunk;
+import com.nsnc.massdriver.driver.Driver;
+import com.nsnc.massdriver.nitrite.entity.NitriteChunk;
+import com.nsnc.massdriver.nitrite.entity.NitriteChunkTrait;
+import com.nsnc.massdriver.path.UUIDByteRepository;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.WriteResult;
-import org.dizitart.no2.objects.Cursor;
-import org.dizitart.no2.objects.ObjectFilter;
 import org.dizitart.no2.objects.ObjectRepository;
 import org.dizitart.no2.objects.filters.ObjectFilters;
 
@@ -20,21 +19,17 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * Created by luna on 8/8/17.
- */
-public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepository<UUID, NitriteAsset>, ChunkRepository<UUID, Chunk>, ByteRepository<UUID> {
+public class NitriteDriver implements Driver<UUID> {
 
     private Path basedir;
     private transient Nitrite db;
-    private transient uuidByteRepository uuidByteRepository;
-    private transient ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private transient UUIDByteRepository uuidByteRepository;
+    //private transient ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public Path getBasedir() {
         return basedir;
@@ -57,6 +52,16 @@ public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepositor
         return Files.createDirectories(Paths.get(basedir.toAbsolutePath().toString(), "chunks"));
     }
 
+
+    private <NT> ObjectRepository<NT> getRepository(Class<NT> klazz) {
+        return db.getRepository(klazz);
+    }
+
+    <NT> WriteResult persistNitrite(Class<NT> klazz, NT entity) {
+        ObjectRepository<NT> repo = getRepository(klazz);
+        return repo.insert(entity);
+    }
+
     public NitriteDriver(Path path) throws IOException {
         setBasedir(path);
     }
@@ -70,89 +75,28 @@ public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepositor
 
 
     @Override
-    public UUID persistAsset(Asset asset) throws IOException {
-        return persistAsset(null, asset);
+    public Asset renameAsset(UUID assetId1, String baseContent1) throws IOException {
+        return null;
     }
 
-    public NitriteAsset convertAsset(UUID id, Asset asset) {
-        NitriteAsset nitriteAsset;
-        if (asset instanceof NitriteAsset) {
-            nitriteAsset = (NitriteAsset) asset;
-            if (nitriteAsset.getId() != null) {
-                id = nitriteAsset.getId();
-            }
-        } else {
-            nitriteAsset = new NitriteAsset(this, asset);
-        }
-        if (id == null) {
-            id = UUID.randomUUID();
-            nitriteAsset.setId(id);
-        }
-
-        // Save Asset
-        persistNitrite(NitriteAsset.class, nitriteAsset);
-        return nitriteAsset;
+    @Override
+    public UUID persistAsset(Asset asset) throws IOException {
+        return null;
     }
 
     @Override
     public UUID persistAsset(UUID id, Asset asset) throws IOException {
-        // Save asset
-        final NitriteAsset nitriteAsset = convertAsset(id, asset);
-
-        // Save Chunks
-        asset.stream()
-                .map(chunk -> new NitriteChunk(this, chunk).assetId(nitriteAsset.getId()))
-                .forEach(NitriteChunk::save);
-
-        commit();
-        return nitriteAsset.getId();
+        return null;
     }
 
     @Override
-    public NitriteAsset retrieveAsset(UUID id) {
-        NitriteAsset nitriteAsset = getRepository(NitriteAsset.class).find(ObjectFilters.eq("id", id)).firstOrDefault();
-        nitriteAsset.setNitriteDriver(this);
-        return nitriteAsset;
-    }
-
-    public Stream<NitriteAsset> findAssets() {
-        Cursor<NitriteAsset> cursor = getRepository(NitriteAsset.class).find();
-        return StreamSupport.stream(
-                cursor.spliterator()
-                ,false
-        ).map(nitriteAsset -> nitriteAsset.resume(this));
+    public Asset retrieveAsset(UUID assetIdentifier) {
+        return null;
     }
 
     @Override
-    public Stream<NitriteAsset> findAssets(String assetName, Trait... traits) {
-        ObjectRepository<NitriteAsset> repo = getRepository(NitriteAsset.class);
-        Cursor<NitriteAsset> cursor  = repo.find(
-                (traits != null) ?
-                ObjectFilters.and(
-                        ObjectFilters.eq("name", assetName),
-                        ofTraits(traits)
-                )
-                        :
-                        ObjectFilters.eq("name", assetName)
-        );
-        return StreamSupport.stream(cursor.spliterator(), false);
-    }
-
-    private ObjectFilter ofTraits(Trait... traits) {
-        return ofTraits(Arrays.asList(traits));
-    }
-
-    private ObjectFilter ofTraits(List<Trait> traits) {
-        return ObjectFilters.and(
-            traits.stream().map(this::ofTrait).toArray(ObjectFilter[]::new)
-        );
-    }
-
-    private ObjectFilter ofTrait(Trait trait) {
-        return ObjectFilters.or(
-                ObjectFilters.not(ObjectFilters.in("description.traits.name", trait.getName())),
-                ObjectFilters.in("description.traits", trait)
-        );
+    public Stream<Asset> findAssets(String assetName, Trait... traits) {
+        return null;
     }
 
     @Override
@@ -162,12 +106,40 @@ public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepositor
 
     @Override
     public UUID persistChunk(UUID id, Chunk chunk) {
-        return persistData(id, chunk.getData());
+        persistData(id, chunk.getData()); // Save the Data
+        persistNitrite(NitriteChunk.class, new NitriteChunk(id, chunk.getPosition(), chunk.getLength())); // Data the Chunk Meta
+        chunk.getDescription().getTraits().stream() // Save the Traits.
+                .map(trait -> new NitriteChunkTrait(null, id, trait))
+                .forEach(nitriteChunkTrait -> persistNitrite(NitriteChunkTrait.class, nitriteChunkTrait));
+        return id;
     }
 
     @Override
-    public Chunk retrieveChunk(UUID identifier) {
-        return null;
+    public Chunk retrieveChunk(UUID chunkId) {
+        try {
+            return new MemoryChunk(retrieveData(chunkId), retrieveChunkMetadata(chunkId).getPosition(), retrieveChunkDescrtiption(chunkId));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private NitriteChunk retrieveChunkMetadata(UUID chunkId) {
+        return getRepository(NitriteChunk.class)
+                .find(ObjectFilters.eq("id", chunkId))
+                .firstOrDefault();
+    }
+    private Description retrieveChunkDescrtiption(UUID chunkId) {
+        return new Description(
+                StreamSupport.stream(
+                    getRepository(NitriteChunkTrait.class)
+                    .find(ObjectFilters.eq("chunkId", chunkId))
+                    .spliterator(),
+                    false
+                )
+                .map(NitriteChunkTrait::getTrait)
+                .collect(Collectors.toList())
+        );
+
     }
 
     @Override
@@ -182,7 +154,7 @@ public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepositor
 
     @Override
     public UUID stream(Stream<? extends ByteBuffer> byteBufferStream) throws IOException {
-        return stream(UUID.randomUUID(), byteBufferStream);
+        return uuidByteRepository.stream(byteBufferStream);
     }
 
     @Override
@@ -191,65 +163,12 @@ public class NitriteDriver implements IndexRepository<PathAsset>, AssetRepositor
     }
 
     @Override
-    public byte[] retrieveData(UUID identifier) throws IOException {
-        return uuidByteRepository.retrieveData(identifier);
-    }
-
-
-    @Override
-    public Path persistIndex(PathAsset index) throws IOException {
-        persistNitrite(PathAsset.class, index);
-        return index.getId();
+    public byte[] retrieveData(UUID id) throws IOException {
+        return uuidByteRepository.retrieveData(id);
     }
 
     @Override
-    public PathAsset retrieveIndex(Path indexIdentifier) {
-        return getRepository(PathAsset.class).find(ObjectFilters.eq("path", indexIdentifier)).firstOrDefault();
-    }
-
     public Stream<ByteBuffer> stream(UUID id, int chunkSize) throws IOException {
         return uuidByteRepository.stream(id, chunkSize);
-    }
-
-    public Stream<NitriteChunk> streamChunks(UUID assetId) {
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                    getRepository(NitriteChunk.class)
-                        .find(ObjectFilters.eq("assetId", assetId))
-                            .iterator()
-                        , Spliterator.ORDERED), false)
-                .map(nitriteChunk -> nitriteChunk.resume(this));
-    }
-
-
-
-    private <NT> ObjectRepository<NT> getRepository(Class<NT> klazz) {
-        return db.getRepository(klazz);
-    }
-
-    <NT> WriteResult persistNitrite(Class<NT> klazz, NT entity) {
-        ObjectRepository<NT> repo = getRepository(klazz);
-        return repo.insert(entity);
-    }
-
-    public boolean hasUnsavedChanges() {
-        return db.hasUnsavedChanges();
-    }
-
-    public void commit() {
-        db.commit();
-    }
-
-    public void close() {
-        db.close();
-    }
-
-
-    @Override
-    public NitriteAsset renameAsset(UUID identifier, String newName) throws IOException {
-        NitriteAsset nitriteAsset = retrieveAsset(identifier);
-        nitriteAsset.setName(newName);
-        getRepository(NitriteAsset.class).update(nitriteAsset);
-        return nitriteAsset;
     }
 }

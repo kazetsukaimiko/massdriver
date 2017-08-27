@@ -17,6 +17,12 @@ public class MemoryChunk extends BaseChunk {
         }   return description;
     }
 
+    public MemoryChunk(byte[] data, long position, Description description) {
+        setData(data);
+        setPosition(position);
+        setDescription(description);
+    }
+
     public MemoryChunk(Chunk chunk) {
         setData(chunk.getData());
         setPosition(chunk.getPosition());

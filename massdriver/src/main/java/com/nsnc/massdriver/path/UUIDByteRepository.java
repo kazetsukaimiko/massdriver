@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  * Simple ByteRepository that stores its data under a directory with a UUID naming convention.
  *
  */
-public class uuidByteRepository implements ByteRepository<UUID> {
+public class UUIDByteRepository implements ByteRepository<UUID> {
 
     private Path basedir;
 

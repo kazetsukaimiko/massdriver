@@ -2,17 +2,15 @@ package com.nsnc.massdriver.tests;
 
 import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
-import com.nsnc.massdriver.asset.Asset;
 import com.nsnc.massdriver.chunk.*;
-import com.nsnc.massdriver.nitrite.NitriteAsset;
-import com.nsnc.massdriver.nitrite.NitriteDriver;
+import com.nsnc.massdriver.nitrite.deprecated.NitriteAsset;
+import com.nsnc.massdriver.nitrite.deprecated.NitriteDriver;
 import com.nsnc.massdriver.crypt.CryptUtils;
 import com.nsnc.massdriver.util.Benchmark;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
 
 import java.io.IOException;
 import java.nio.file.Files;

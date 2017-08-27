@@ -15,7 +15,6 @@ public abstract class MemoryTest extends TimedTest {
 
     private long usedMemory = -1;
 
-
     @Rule
     public TestName name = new TestName();
 

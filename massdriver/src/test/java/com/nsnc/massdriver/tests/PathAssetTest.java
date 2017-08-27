@@ -7,9 +7,8 @@ import com.nsnc.massdriver.chunk.PathAsset;
 
 import com.nsnc.massdriver.chunk.ChunkUtils;
 import com.nsnc.massdriver.crypt.CryptUtils;
-import com.nsnc.massdriver.data.ByteStream;
-import com.nsnc.massdriver.nitrite.NitriteAsset;
-import com.nsnc.massdriver.nitrite.NitriteDriver;
+import com.nsnc.massdriver.nitrite.deprecated.NitriteAsset;
+import com.nsnc.massdriver.nitrite.deprecated.NitriteDriver;
 import org.junit.*;
 
 import java.io.IOException;

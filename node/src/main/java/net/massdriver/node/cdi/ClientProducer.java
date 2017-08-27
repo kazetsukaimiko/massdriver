@@ -6,16 +6,16 @@ import net.massdriver.node.endpoints.PeerEndpoint;
 import net.massdriver.node.model.Peer;
 import net.massdriver.node.util.ClientUtil;
 
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.inject.Inject;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -29,19 +29,21 @@ public class ClientProducer implements PeerEndpoint {
 
     @SuppressWarnings("unchecked") // I know what I'm doing
     @Produces @PeerClient
-    public <T extends NodeClient> T getNodeClient(InjectionPoint injectionPoint) {
+    public NodeClient getNodeClient(InjectionPoint injectionPoint) {
         PeerClient peerClient = injectionPoint.getAnnotated().getAnnotation(PeerClient.class);
 
         PeerClientInvocationHandler handler
             = new PeerClientInvocationHandler(peerClient);
-        T proxy = (T) Proxy.newProxyInstance(
+        return (NodeClient) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class[] { peerClient.clientClass() },
             handler
         );
-
-        return proxy;
     }
+
+    @Inject
+    @PeerClient(clientClass=PeerEndpoint.class, best=true)
+    private PeerEndpoint peerEndpoint;
 
     public List<Peer> prioritizePeers() {
         return peers
@@ -56,8 +58,15 @@ public class ClientProducer implements PeerEndpoint {
         return peers;
     }
 
+    public void proliferate(Peer peer) {
+        peers.add(peer);
+        if (peers.stream().filter(current -> current.getTime() > 0).count() < 1000) {
+            addPeers(new ArrayList<>(peerEndpoint.getPeers()));
+        }
+    }
+
     public Set<Peer> addPeers(List<Peer> peers) {
-        peers.forEach(peers::add);
+        peers.forEach(this::proliferate);
         return getPeers();
     }
 
@@ -66,13 +75,8 @@ public class ClientProducer implements PeerEndpoint {
         return getPeers();
     }
 
-
-    public static  <T extends NodeClient> T proxy(List<Peer> peers, Class<T> clientClass) {
-
-    }
-
     public class PeerClientInvocationHandler implements InvocationHandler {
-        private final PeerClient peerClient
+        private final PeerClient peerClient;
 
         public PeerClientInvocationHandler(PeerClient peerClient) {
             this.peerClient = peerClient;
@@ -80,7 +84,7 @@ public class ClientProducer implements PeerEndpoint {
 
         private List<Peer> getPriorityPeers() {
             if (peerClient.best()) { // Limit to these
-                return Arrays.asList(new Peer(peerClient.hostname(), peerClient.port())))
+                return Arrays.asList(new Peer(peerClient.hostname(), peerClient.port()));
             }   return prioritizePeers();
         }
 
@@ -108,22 +112,33 @@ public class ClientProducer implements PeerEndpoint {
                             ));
 
 
+            return fastest(jobs);
+        }
+
+        public Object fastest(Map<Peer, Future<Object>> jobs) throws InterruptedException, TimeoutException, ExecutionException {
+            // Fastest
             long startTime = System.currentTimeMillis();
             boolean done = false;
+            Object retval = null;
             while (!done) {
                 for (Peer peer : jobs.keySet()) {
                     Future<Object> job = jobs.get(peer);
                     if (job.isDone()) { // Employ "FASTEST" strategy.
                         peer.setTime(System.currentTimeMillis()-startTime);
-                        logger.info("Winning peer: " + peer + " ("+peer.getTime()+"ms)")
-                        return job.get();
+                        logger.info("Winning peer: " + peer + " ("+peer.getTime()+"ms)");
+                        retval = job.get(); break;
                     }
+                }
+                if (retval != null) {
+                    break;
                 }
                 Thread.sleep(1);
                 if (System.currentTimeMillis()-startTime >= peerClient.timeout()) {
                     throw new TimeoutException("NodeClient Method failed to return a respose within allotted time.");
                 }
             }
+            jobs.values().forEach(future -> future.cancel(true));
+            return retval;
 
         }
     }

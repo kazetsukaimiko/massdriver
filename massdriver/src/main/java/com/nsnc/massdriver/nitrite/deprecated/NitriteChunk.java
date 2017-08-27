@@ -1,4 +1,4 @@
-package com.nsnc.massdriver.nitrite;
+package com.nsnc.massdriver.nitrite.deprecated;
 
 import com.nsnc.massdriver.chunk.Chunk;
 import com.nsnc.massdriver.Description;

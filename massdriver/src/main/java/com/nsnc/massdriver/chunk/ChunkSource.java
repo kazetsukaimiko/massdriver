@@ -1,5 +1,7 @@
 package com.nsnc.massdriver.chunk;
 
-public interface ChunkSource<AI, AT extends Chunk> {
-    AT retrieveChunk(AI ChunkIdentifier);
+import com.nsnc.massdriver.data.ByteSource;
+
+public interface ChunkSource<CI, CT extends Chunk> extends ByteSource<CI> {
+    CT retrieveChunk(CI chunkId);
 }

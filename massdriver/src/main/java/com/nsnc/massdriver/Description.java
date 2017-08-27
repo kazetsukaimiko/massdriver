@@ -30,7 +30,7 @@ public class Description { // implements Comparable<Description> {
 
     }
 
-    public Description(Collection<Trait> traits) {
+    public <C extends Collection<Trait> Description(C<Trait> traits) {
         this.traits = new ArrayList<>(traits);
     }
 
