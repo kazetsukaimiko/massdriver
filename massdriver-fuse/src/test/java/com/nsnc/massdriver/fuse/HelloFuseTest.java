@@ -1,6 +1,5 @@
 package com.nsnc.massdriver.fuse;
 
-import com.nsnc.massdriver.tests.FileSystemTest;
 import jnr.ffi.Platform;
 import org.junit.After;
 import org.junit.Before;

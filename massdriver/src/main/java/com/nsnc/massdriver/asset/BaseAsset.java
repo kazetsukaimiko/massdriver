@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Created by luna on 8/8/17.
  */
-public abstract class BaseAsset implements Asset {
+public abstract class BaseAsset<AI> implements Asset<AI> {
 
     private String name;
     @Override

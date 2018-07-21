@@ -75,12 +75,12 @@ public class UUIDByteRepository implements ByteRepository<UUID> {
         return Paths.get(basedir.toAbsolutePath().toString(), id.toString());
     }
 
-    public uuidByteRepository(Path basedir) throws IOException {
+    public UUIDByteRepository(Path basedir) throws IOException {
         setBasedir(basedir);
         Files.createDirectories(basedir);
     }
 
-    public uuidByteRepository() {
+    public UUIDByteRepository() {
 
     }
 }

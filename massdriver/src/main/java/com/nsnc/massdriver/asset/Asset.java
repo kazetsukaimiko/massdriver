@@ -1,8 +1,7 @@
 package com.nsnc.massdriver.asset;
 
-import com.nsnc.massdriver.chunk.Chunk;
 import com.nsnc.massdriver.Description;
-import sun.security.krb5.internal.crypto.Des;
+import com.nsnc.massdriver.chunk.Chunk;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,18 +10,26 @@ import java.util.stream.Stream;
 /**
  * Created by luna on 8/8/17.
  */
-public interface Asset {
-    public String getName();
+public interface Asset<AI> {
+    AI getId();
 
-    public String getUrn();
+    Asset<AI> ofString(String input);
 
-    public String getContentType();
+    String asString();
 
-    public long getSize();
+    String getName();
 
-    public Description getDescription();
+    String getUrn();
 
-    public List<Description> getChunkInfo();
+    String getContentType();
 
-    public Stream<? extends Chunk> stream() throws IOException;
+    long getSize();
+
+    Description getDescription();
+
+    List<Description> getChunkInfo();
+
+    Stream<? extends Chunk> stream() throws IOException;
+
+
 }

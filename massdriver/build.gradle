@@ -1,0 +1,17 @@
+
+description = 'Massdriver'
+dependencies {
+    compile group: 'com.jcabi', name: 'jcabi-urn', version:'0.9'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.9.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.0'
+    compile group: 'com.couchbase.lite', name: 'couchbase-lite-java', version:'1.4.0'
+    compile group: 'org.dizitart', name: 'nitrite', version:'1.0.1'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

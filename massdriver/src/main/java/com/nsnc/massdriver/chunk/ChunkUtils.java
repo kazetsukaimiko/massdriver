@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,9 +13,11 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.nsnc.massdriver.Description;
+import com.nsnc.massdriver.Sequence;
 import com.nsnc.massdriver.asset.Asset;
 import com.nsnc.massdriver.crypt.CryptUtils;
 import com.nsnc.massdriver.data.ByteRepository;
@@ -65,7 +68,30 @@ public class ChunkUtils {
     }
 
     public static Stream<MemoryChunk> chunkStream(Path aPath) throws IOException {
-        return new PathAsset(aPath).stream();
+        final int[] position = {0};
+        return ByteStream.stream(aPath, Chunk.DEFAULT_CHUNK_SIZE)
+                .map(byteBuffer -> {
+                    MemoryChunk chunk = new MemoryChunk(byteBuffer.array(), position[0]);
+                    position[0] += chunk.getLength();
+                    return chunk;
+                });
+    }
+
+    public static Stream<Sequence> sequenceStream(Path aPath) throws IOException {
+        final List<Long> positions = new ArrayList<>();
+        List<Description> descriptions = chunkStream(aPath)
+                .map(memchunk -> {
+                            positions.add(memchunk.getPosition());
+                            return memchunk.getDescription();
+                })
+                .collect(Collectors.toList());
+        return IntStream.range(0, descriptions.size())
+                .mapToObj(i -> new Sequence(
+                        positions.get(i),
+                        i > 0 ? descriptions.get(i-1) : null,
+                        descriptions.get(i),
+                        i < descriptions.size() ? descriptions.get(i+1) : null
+                ));
     }
 
 

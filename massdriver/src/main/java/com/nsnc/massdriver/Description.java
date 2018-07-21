@@ -12,7 +12,7 @@ import java.util.Objects;
  * and a list of Trait identifiers.
  *
  * This class determines the "identity" of a Chunk via hashing.
- * When a PathAsset changes size, a new Partial PathAsset is created.
+ * When a FileAsset changes size, a new Partial FileAsset is created.
  */
 public class Description { // implements Comparable<Description> {
 
@@ -30,7 +30,7 @@ public class Description { // implements Comparable<Description> {
 
     }
 
-    public <C extends Collection<Trait> Description(C<Trait> traits) {
+    public Description(Collection<Trait> traits) {
         this.traits = new ArrayList<>(traits);
     }
 

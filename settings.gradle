@@ -1,0 +1,8 @@
+rootProject.name = 'collection'
+include ':massdriver'
+include ':massdriver-fuse'
+include ':node'
+
+project(':massdriver').projectDir = "$rootDir/massdriver" as File
+project(':massdriver-fuse').projectDir = "$rootDir/massdriver-fuse" as File
+project(':node').projectDir = "$rootDir/node" as File

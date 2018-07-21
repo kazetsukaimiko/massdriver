@@ -45,4 +45,9 @@ public class ChunkUtilsTest extends FileSystemTest {
         Assert.assertEquals("Files Must Match", fileHash, copyHash);
     }
 
+    @Test
+    public void testIndex() {
+
+    }
+
 }
