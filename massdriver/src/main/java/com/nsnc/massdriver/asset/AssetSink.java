@@ -1,8 +1,9 @@
 package com.nsnc.massdriver.asset;
 
+import com.nsnc.massdriver.Description;
+
 import java.io.IOException;
 
-public interface AssetSink<AI, AT extends Asset> {
-    AI persistAsset(Asset asset) throws IOException;
-    AI persistAsset(AI id, Asset asset) throws IOException;
+public interface AssetSink {
+    Description persistAsset(Asset asset) throws IOException;
 }

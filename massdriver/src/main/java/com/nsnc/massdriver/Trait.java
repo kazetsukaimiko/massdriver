@@ -47,8 +47,12 @@ public class Trait {
         this.content = content;
     }
 
+    public static String safeAlgorithmName(String algorithm) {
+        return algorithm.replaceAll("\\/", "-");
+    }
+
     public Trait(MessageDigest messageDigest) {
-        this.name = messageDigest.getAlgorithm();
+        this.name = safeAlgorithmName(messageDigest.getAlgorithm());
         this.content = CryptUtils.toHexString(messageDigest.digest());
     }
 

@@ -20,6 +20,7 @@ public abstract class FileSystemTest extends MemoryTest {
     protected Path randomEmptyDirectory = null;
     protected Path randomDirectory = null;
     protected Path randomFile = null;
+
     @Before
     public void createRandomFiles() throws IOException {
         randomEmptyDirectory = randomDirectory();
@@ -92,6 +93,8 @@ public abstract class FileSystemTest extends MemoryTest {
             Files.write(randomFile, buffer, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             remaining = remaining - buffer.length;
         }
+        String md5 = CryptUtils.hash("MD5", randomFile);
+        logger.info("File created: (MD5) " + md5);
         return randomFile;
     }
 }

@@ -1,11 +1,14 @@
 package com.nsnc.massdriver.driver;
 
 import com.nsnc.massdriver.asset.Asset;
-import com.nsnc.massdriver.chunk.Chunk;
-import com.nsnc.massdriver.asset.AssetRepository;
-import com.nsnc.massdriver.chunk.ChunkRepository;
+import com.nsnc.massdriver.asset.AssetSink;
+import com.nsnc.massdriver.asset.AssetSource;
+import com.nsnc.massdriver.chunk.ChunkSink;
+import com.nsnc.massdriver.chunk.ChunkSource;
 
+import java.io.IOException;
+import java.nio.file.Path;
 
-// TODO: Smart Lookups By Trait, URI, etc
-public interface Driver<ID> extends AssetRepository<ID, Asset>, ChunkRepository<ID, Chunk> {
+public interface Driver extends AssetSink, AssetSource, ChunkSink, ChunkSource {
+    Asset persist(Path path) throws IOException;
 }

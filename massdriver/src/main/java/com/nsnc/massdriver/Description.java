@@ -63,9 +63,4 @@ public class Description { // implements Comparable<Description> {
         return Objects.hash(traits);
     }
 
-    /*
-    @Override
-    public int compareTo(Description that) {
-        return new Long(order).compareTo(new Long(that.getOrder()));
-   }*/
 }

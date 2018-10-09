@@ -27,16 +27,10 @@ public class ChunkUtils {
 
     protected static final Logger logger = Logger.getLogger(ChunkUtils.class.getName());
 
-    public static Path writeAsset(Path filePath, Asset asset) throws IOException {
-        return writeChunkStream(filePath, asset.stream());
-    }
-
     public static Path writeChunkStream(Path filePath, Stream<? extends Chunk> chunkStream) throws IOException {
         ByteStream.stream(filePath, chunkStream.map(Chunk::getByteBuffer));
         return filePath;
     }
-
-
 
     public static String hashChunkStream(String algorithm, Stream<? extends Chunk> chunkStream) {
         Optional<MessageDigest> digest = CryptUtils.getDigest(algorithm);
@@ -44,16 +38,12 @@ public class ChunkUtils {
             MessageDigest messageDigest = digest.get();
             chunkStream
                     .forEach(chunk -> {
-                        //logger.info("Getting : " + chunk.getData().length);
                         messageDigest.update(chunk.getData());
                     });
             return CryptUtils.toHexString(messageDigest.digest());
         }
         return null;
     }
-
-
-
 
     public static byte[] readFileChunk(Path path, long start, long length) {
         try {

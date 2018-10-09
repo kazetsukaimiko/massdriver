@@ -2,11 +2,14 @@ package com.nsnc.massdriver.crypt;
 
 import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
+import com.nsnc.massdriver.chunk.Chunk;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.*;
 import java.security.Provider.Service;
@@ -14,29 +17,27 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
-public class CryptUtils {
+public final class CryptUtils {
 
-    protected static final Logger logger = Logger.getLogger(CryptUtils.class.getName());
+    private static final Logger logger = Logger.getLogger(CryptUtils.class.getName());
 
-    protected static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private static final Set<String> hashAlgorithms = fetchHashAlgorithms();
     private static final Set<String> cipherAlgorithms = fetchCipherAlgorithms();
 
-    // NOT thread safe.
-    //private static final Map<String, MessageDigest> digests = fetchDigests();
-    //private static final Map<String, Cipher> ciphers = fetchCiphers();
-
-    
-    
     private static final int DEFAULT_CHUNK_SIZE = 1024 * 256;
 
     public static Set<String> getHashAlgorithms() {
@@ -49,7 +50,7 @@ public class CryptUtils {
 
     private static Set<String> fetchHashAlgorithms() {
         return Arrays.stream(Security.getProviders())
-                .map(p -> fetchHashAlgorithms(p, MessageDigest.class))
+                .map(CryptUtils::fetchHashAlgorithms)
                 .flatMap(Set::stream)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -63,17 +64,68 @@ public class CryptUtils {
             .sorted()
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
-    
-    private static Set<String> fetchHashAlgorithms(Provider provider, Class<MessageDigest> messageDigestClass) {
+
+    public static Set<String> fetchSecurityProviders() {
+        return Stream.of(Security.getProviders())
+                .map(Provider::getName)
+                .sorted()
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static Set<String> fetchAlgorithms(Provider provider, Predicate<Service> servicePredicate) {
         return provider
                 .getServices()
                 .stream()
-                .filter(service -> service.getType().equalsIgnoreCase(messageDigestClass.getSimpleName()))
+                .filter(servicePredicate)
                 .map(Service::getAlgorithm)
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
-    
+
+    private static Set<String> fetchAlgorithms(Provider provider, String serviceType)  {
+        return fetchAlgorithms(provider, service -> service.getType().equalsIgnoreCase(serviceType));
+    }
+
+
+    private static Set<String> fetchHashAlgorithms(Provider provider) {
+        return fetchAlgorithms(provider, MessageDigest.class.getSimpleName());
+    }
+
+    private static Set<String> fetchKeyAlgorithms(Provider provider) {
+        return fetchAlgorithms(provider, KeyGenerator.class.getSimpleName());
+    }
+
+    private static Set<String> fetchKeyPairAlgorithms(Provider provider) {
+        return fetchAlgorithms(provider, KeyPairGenerator.class.getSimpleName());
+    }
+
+    /**
+     * TODO: Strengthen
+     * @return
+     */
+    private static byte[] seed() {
+        ByteBuffer bb = ByteBuffer.allocate(64);
+        try {
+            SeekableByteChannel sbc = Files.newByteChannel(Paths.get("/dev/urandom"));
+            sbc.read(bb);
+        } catch (IOException e) {
+            e.printStackTrace();
+            bb = ByteBuffer.allocate(Long.BYTES);
+            bb.putLong(System.currentTimeMillis());
+        }
+        return bb.array();
+    }
+
+    public static SecretKey generateBiDirectionalKey(String alg, int length) throws NoSuchAlgorithmException {
+        return KeyGenerator.getInstance(alg).generateKey();
+    }
+
+    public static KeyPair generateKeyPair(String alg, int length) throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(alg);
+        keyPairGen.initialize(length);
+        return keyPairGen.generateKeyPair();
+    }
+
     public static Cipher getDefaultCipher() {
         return getCipher(
             "AES_256/ECB/NoPadding",
@@ -127,7 +179,6 @@ public class CryptUtils {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
-
     }
 
     private static Optional<Cipher> constructCipher(String algorithm) {
@@ -160,7 +211,7 @@ public class CryptUtils {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toMap(
-                digest -> digest.getAlgorithm(),
+                    MessageDigest::getAlgorithm,
                 Function.identity()
             ));
     }
@@ -171,11 +222,11 @@ public class CryptUtils {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toMap(
-                cipher -> cipher.getAlgorithm(),
+                    Cipher::getAlgorithm,
                 Function.identity()
             ));
     }
-    
+
     private static Optional<MessageDigest> getMessageDigestFor(String algorithm) {
         try {
             return Optional.of(MessageDigest.getInstance(algorithm));
@@ -213,9 +264,9 @@ public class CryptUtils {
             MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
             ByteBuffer bb = ByteBuffer.allocate(bytes.length);
             bb.put(bytes);
-            //byte[] digest = messageDigest.digest(bytes);
-            messageDigest.update(bb);
-            byte[] digest = messageDigest.digest();
+            byte[] digest = messageDigest.digest(bytes);
+            //messageDigest.update(bb);
+            //byte[] digest = messageDigest.digest();
             String hashString = toHexString(digest);
             return hashString;
         } catch (Exception e) {
@@ -226,14 +277,15 @@ public class CryptUtils {
     public static String hash(String algorithm, Path path) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+            messageDigest.reset();
             SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ);
 
-            int buffer_size = 1024*1024;
+            int buffer_size = Chunk.DEFAULT_CHUNK_SIZE;
             while (channel.position()<channel.size()) {
                 long remaining = channel.size()-channel.position();
                 ByteBuffer bb = ByteBuffer.allocate((buffer_size<remaining)? buffer_size : (int)remaining);
                 int read = channel.read(bb);
-                messageDigest.update(bb);
+                messageDigest.update(bb.array());
             }
             return toHexString(messageDigest.digest());
         } catch (Exception e) {
@@ -254,7 +306,6 @@ public class CryptUtils {
                 int read = channel.read(bb);
                 for(MessageDigest messageDigest : digestList) {
                     messageDigest.update(bb);
-                    //messageDigest.update(bb.array());
                 }
             }
             return digestList.stream().map(CryptUtils::toTrait).collect(Collectors.toList());
@@ -280,8 +331,9 @@ public class CryptUtils {
     }
 
 
+
     public static Trait toTrait(MessageDigest digest) {
-        return new Trait(digest.getAlgorithm(), toHexString(digest.digest()));
+        return new Trait(digest);
     }
 
     public static Description makeDescription(byte[] bytes) {

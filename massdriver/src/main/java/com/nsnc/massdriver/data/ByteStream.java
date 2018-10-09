@@ -1,6 +1,7 @@
 package com.nsnc.massdriver.data;
 
 import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.crypt.CryptUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,16 +22,20 @@ public class ByteStream {
     public static Stream<ByteBuffer> stream(Path path, int chunksize) throws IOException {
         final long size = Files.size(path);
         final long limit = (long) Math.ceil((double) size / (double) chunksize);
+        final SeekableByteChannel seekableByteChannel = Files.newByteChannel(path);
+
         Supplier<ByteBuffer> bbsupplier = new Supplier<ByteBuffer>() {
-            SeekableByteChannel seekableByteChannel = Files.newByteChannel(path);
             long remaining = size;
             @Override
             public ByteBuffer get() {
-                int allocSize = (remaining>chunksize)? chunksize : (int) remaining;
+                int allocSize = (remaining > chunksize)? chunksize : (int) remaining;
                 remaining = remaining - allocSize;
                 ByteBuffer byteBuffer = ByteBuffer.allocate(allocSize);
                 try {
+                    System.out.println(seekableByteChannel.position() + ":" + remaining);
                     seekableByteChannel.read(byteBuffer);
+                    //seekableByteChannel.position(seekableByteChannel.position()+chunksize);
+                    System.out.println("MD5:"+CryptUtils.hash("MD5", byteBuffer.array()));
                 } catch (IOException e) {
                     throw new RuntimeException("Can't read to stream", e);
                 }

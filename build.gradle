@@ -7,14 +7,15 @@ allprojects  {
 
 subprojects {
   apply plugin: 'java'
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
+  sourceCompatibility = 10
+  targetCompatibility = 10
   tasks.withType(JavaCompile) {
   	options.encoding = 'UTF-8'
   }
 
   
-  repositories {
+  repositories { 
+    jcenter()
     mavenLocal()
     
     maven { url "http://repo.maven.apache.org/maven2" }

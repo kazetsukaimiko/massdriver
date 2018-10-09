@@ -3,6 +3,7 @@ package com.nsnc.massdriver.chunk;
 import com.nsnc.massdriver.Description;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Created by luna on 8/1/17.
@@ -11,39 +12,47 @@ import java.nio.ByteBuffer;
  *
  */
 public interface Chunk {
-
     /**
      * Returns the data fragment from this chunk.
      * @return Byte array of the chunk data.
      */
-    public byte[] getData();
-    public void setData(byte[] data);
+    byte[] getData();
+    void setData(byte[] data);
 
     /**
      * Same, but as a ByteBuffer.
      * @return ByteBuffer of the chunk data.
      */
-    public ByteBuffer getByteBuffer();
+    ByteBuffer getByteBuffer();
 
     /**
      * Where this data begins in the Asset
      * @return
      */
-    public long getPosition();
-    public void setPosition(long position);
+    long getPosition();
+    void setPosition(long position);
 
     /**
      * How large the chunk is.
      * @return
      */
-    public int getLength();
+    int getLength();
 
     /**
      * A description of this Chunk unique enough to identify it.
      * @return
      */
-    public Description getDescription();
-    public void setDescription(Description description);
+    Description getDescription();
+    void setDescription(Description description);
+
+
+    /**
+     * A List describing how the chunk data is encoded, in reverse order.
+     * For instance, you could have:
+     * 'gzip', 'encrypt:dsa?sha256=
+     * @return
+     */
+    List<String> getEncodings();
 
 
     /**
@@ -51,5 +60,5 @@ public interface Chunk {
      * Note that this is the DEFAULT chunk size- chunks, particularly when
      * written to, can change size!
      */
-    public static final int DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB
+    int DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB
 }

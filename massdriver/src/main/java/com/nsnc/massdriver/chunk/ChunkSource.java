@@ -1,7 +1,12 @@
 package com.nsnc.massdriver.chunk;
 
-import com.nsnc.massdriver.data.ByteSource;
+import com.nsnc.massdriver.Description;
+import com.nsnc.massdriver.Trait;
 
-public interface ChunkSource<CI, CT extends Chunk> extends ByteSource<CI> {
-    CT retrieveChunk(CI chunkId);
+import java.util.Optional;
+import java.util.stream.Stream;
+
+public interface ChunkSource {
+    Optional<Chunk> retrieveChunk(Description chunkDescription);
+    Stream<Chunk> findChunksByTraits(Trait... traits);
 }

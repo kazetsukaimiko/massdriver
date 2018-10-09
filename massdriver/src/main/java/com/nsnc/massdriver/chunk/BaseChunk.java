@@ -5,6 +5,7 @@ import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -14,6 +15,7 @@ public abstract class BaseChunk implements Chunk {
     protected byte[] data;
     protected long position;
     protected Description description;
+    private List<String> encodings;
 
     @Override
     public byte[] getData() {
@@ -48,6 +50,15 @@ public abstract class BaseChunk implements Chunk {
     @Override
     public void setDescription(Description description) {
         this.description = description;
+    }
+
+    @Override
+    public List<String> getEncodings() {
+        return encodings;
+    }
+
+    public void setEncodings(List<String> encodings) {
+        this.encodings = encodings;
     }
 
     @Override
