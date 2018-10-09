@@ -1,5 +1,7 @@
 package com.nsnc.massdriver.chunk;
 
+import java.nio.ByteBuffer;
+
 import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.crypt.CryptUtils;
 
@@ -10,15 +12,18 @@ import com.nsnc.massdriver.crypt.CryptUtils;
  */
 public class MemoryChunk extends BaseChunk {
 
+    private ByteBuffer byteBuffer;
+
     @Override
     public Description getDescription() {
         if (description == null) {
-            description = CryptUtils.makeDescription(data);
-        }   return description;
+            description = CryptUtils.makeDescription(getData());
+        }
+        return description;
     }
 
-    public MemoryChunk(byte[] data, long position, Description description) {
-        setData(data);
+    public MemoryChunk(ByteBuffer byteBuffer, long position, Description description) {
+        setData(byteBuffer);
         setPosition(position);
         setDescription(description);
     }
@@ -29,8 +34,13 @@ public class MemoryChunk extends BaseChunk {
         setDescription(chunk.getDescription());
     }
 
-    public MemoryChunk(byte[] data, long position) {
-        setData(data);
+    /**
+     * Lazily Make the Description
+     * @param byteBuffer
+     * @param position
+     */
+    public MemoryChunk(ByteBuffer byteBuffer, long position) {
+        setData(byteBuffer);
         setPosition(position);
     }
 

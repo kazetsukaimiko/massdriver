@@ -28,7 +28,7 @@ public class ChunkUtils {
     protected static final Logger logger = Logger.getLogger(ChunkUtils.class.getName());
 
     public static Path writeChunkStream(Path filePath, Stream<? extends Chunk> chunkStream) throws IOException {
-        ByteStream.stream(filePath, chunkStream.map(Chunk::getByteBuffer));
+        ByteStream.stream(filePath, chunkStream.map(Chunk::getData));
         return filePath;
     }
 
@@ -61,7 +61,7 @@ public class ChunkUtils {
         final int[] position = {0};
         return ByteStream.stream(aPath, Chunk.DEFAULT_CHUNK_SIZE)
                 .map(byteBuffer -> {
-                    MemoryChunk chunk = new MemoryChunk(byteBuffer.array(), position[0]);
+                    final MemoryChunk chunk = new MemoryChunk(byteBuffer, position[0]);
                     position[0] += chunk.getLength();
                     return chunk;
                 });

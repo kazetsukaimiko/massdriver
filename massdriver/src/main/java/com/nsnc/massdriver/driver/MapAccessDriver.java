@@ -84,12 +84,11 @@ public class MapAccessDriver implements Driver {
     }
 
     @Override
-    public Description persistChunk(Chunk chunk) {
+    public Description persistChunk(final Chunk chunk) {
         if (chunk != null) {
             if (assetMap.containsKey(chunk.getDescription())) {
                 System.out.println("DUPLICATE DESCRIPTION!");
-                System.out.println(chunk.getDescription());
-                System.out.println(chunk.getDescription().hashCode());
+                System.out.println(chunk);
             }
             chunkMap.put(chunk.getDescription(), chunk);
             return chunk.getDescription();
@@ -114,7 +113,8 @@ public class MapAccessDriver implements Driver {
         persistAsset(asset);
 
         ChunkUtils.chunkStream(path)
-                .forEach(this::persistChunk);
+                .peek(System.out::println)
+                .forEach(c -> persistChunk(c));
         return asset;
     }
 }

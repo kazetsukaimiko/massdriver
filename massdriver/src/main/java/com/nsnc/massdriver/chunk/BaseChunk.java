@@ -5,6 +5,7 @@ import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,24 +13,27 @@ import java.util.Objects;
  * Created by luna on 8/8/17.
  */
 public abstract class BaseChunk implements Chunk {
-    protected byte[] data;
+    protected ByteBuffer data;
     protected long position;
     protected Description description;
     private List<String> encodings;
 
     @Override
-    public byte[] getData() {
+    public ByteBuffer getData() {
+        if (data.position() > 0) {
+            data = data.rewind();
+        }
         return data;
     }
 
     @Override
-    public void setData(byte[] data) {
+    public void setData(ByteBuffer data) {
         this.data = data;
     }
 
     @Override
-    public ByteBuffer getByteBuffer() {
-        return (getData()!=null)? ByteBuffer.allocate(getData().length).put(getData()) : null;
+    public byte[] toByteArray() {
+        return data != null ? data.array() : new byte[0];
     }
 
     @Override
@@ -63,7 +67,7 @@ public abstract class BaseChunk implements Chunk {
 
     @Override
     public int getLength() {
-        return (data != null) ? data.length : 0;
+        return (data != null) ? data.capacity() : 0;
     }
 
     @Override
@@ -71,7 +75,7 @@ public abstract class BaseChunk implements Chunk {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Chunk chunk = (Chunk) o;
-        return //Arrays.equals(data, chunk.data) &&
+        return // Arrays.equals(data, chunk.getData()) &&
                 Objects.equals(getDescription(), chunk.getDescription());
     }
 

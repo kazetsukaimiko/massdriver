@@ -16,14 +16,14 @@ public interface Chunk {
      * Returns the data fragment from this chunk.
      * @return Byte array of the chunk data.
      */
-    byte[] getData();
-    void setData(byte[] data);
+    ByteBuffer getData();
+    void setData(ByteBuffer data);
 
     /**
      * Same, but as a ByteBuffer.
      * @return ByteBuffer of the chunk data.
      */
-    ByteBuffer getByteBuffer();
+    byte[] toByteArray();
 
     /**
      * Where this data begins in the Asset

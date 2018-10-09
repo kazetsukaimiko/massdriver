@@ -14,36 +14,17 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Base layer utility class to Stream in and out of files.
  */
 public class ByteStream {
     public static Stream<ByteBuffer> stream(Path path, int chunksize) throws IOException {
-        final long size = Files.size(path);
-        final long limit = (long) Math.ceil((double) size / (double) chunksize);
-        final SeekableByteChannel seekableByteChannel = Files.newByteChannel(path);
-
-        Supplier<ByteBuffer> bbsupplier = new Supplier<ByteBuffer>() {
-            long remaining = size;
-            @Override
-            public ByteBuffer get() {
-                int allocSize = (remaining > chunksize)? chunksize : (int) remaining;
-                remaining = remaining - allocSize;
-                ByteBuffer byteBuffer = ByteBuffer.allocate(allocSize);
-                try {
-                    System.out.println(seekableByteChannel.position() + ":" + remaining);
-                    seekableByteChannel.read(byteBuffer);
-                    //seekableByteChannel.position(seekableByteChannel.position()+chunksize);
-                    System.out.println("MD5:"+CryptUtils.hash("MD5", byteBuffer.array()));
-                } catch (IOException e) {
-                    throw new RuntimeException("Can't read to stream", e);
-                }
-
-                return byteBuffer;
-            }
-        };
-        return Stream.generate(bbsupplier).limit(limit);
+        return StreamSupport.stream(
+                new ByteBufferIterable(path, chunksize).spliterator(),
+                false
+        );
     }
 
     public static Path stream(Path path, Stream<? extends ByteBuffer> byteBufferStream) throws IOException {

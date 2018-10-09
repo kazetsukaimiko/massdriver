@@ -3,6 +3,7 @@ package com.nsnc.massdriver.crypt;
 import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.util.Benchmark;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,12 +34,10 @@ public final class CryptUtils {
 
     private static final Logger logger = Logger.getLogger(CryptUtils.class.getName());
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*20);
 
     private static final Set<String> hashAlgorithms = fetchHashAlgorithms();
     private static final Set<String> cipherAlgorithms = fetchCipherAlgorithms();
-
-    private static final int DEFAULT_CHUNK_SIZE = 1024 * 256;
 
     public static Set<String> getHashAlgorithms() {
         return hashAlgorithms;
@@ -146,16 +145,14 @@ public final class CryptUtils {
         ).get();
     }
 
-    public static MessageDigest getDefaultDigest() {
-        return getDigest(
+    public static Stream<MessageDigest> getDefaultDigests() {
+        return getDigests(
             "SHA-512",
-            "SHA-384",
+            //"SHA-384",
             "SHA-256",
-            "SHA-224",
-            "SHA",
-            "MD5",
-            "MD2"
-        ).get();
+            //"SHA-224",
+            "MD5"
+        );
     }
 
     private static Optional<MessageDigest> constructDigest(String algorithm) {
@@ -165,12 +162,16 @@ public final class CryptUtils {
             return Optional.empty();
         }
     }
-    public static Optional<MessageDigest> getDigest(String... algorithms) {
+    public static Stream<MessageDigest> getDigests(String... algorithms) {
         return Arrays.stream(algorithms)
                 .filter(hashAlgorithms::contains)
                 .map(CryptUtils::constructDigest)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(Optional::get);
+    }
+
+    public static Optional<MessageDigest> getDigest(String... algorithms) {
+        return getDigests(algorithms)
                 .findFirst();
     }
     public static List<MessageDigest> getDigests() {
@@ -316,16 +317,40 @@ public final class CryptUtils {
 
 
     public static List<Trait> hashAll(byte[] bytes) {
-        ByteBuffer bb = ByteBuffer.allocate(bytes.length);
-        bb.put(bytes);
-        return hashAll(bb);
+        return getDefaultDigests()
+                .map(messageDigest ->
+                        new Trait(
+                                Trait.safeAlgorithmName(messageDigest.getAlgorithm()),
+                                CryptUtils.toHexString(Benchmark.bench(() -> messageDigest.digest(bytes), messageDigest.getAlgorithm()+" digest: ${millis}ms"))
+                        )
+                )
+                .collect(Collectors.toList());
+    }
+
+    public static Future<Trait> digestToTraitFuture(final MessageDigest messageDigest) {
+        return EXECUTOR_SERVICE.submit(() -> Benchmark.bench(() -> new Trait(messageDigest), messageDigest.getAlgorithm() + " MessageDigest took ${millis}ms"));
+    }
+
+    public static <R> R promiseMeThis(Future<R> uncertainFuture, R alternative) {
+        try {
+            return uncertainFuture.get();
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Could not resolve uncertainFuture: ", e);
+            return alternative;
+        }
     }
 
     public static List<Trait> hashAll(ByteBuffer bb) {
-        return getDigests().stream()
+        if (bb.position()>0) {
+            bb.rewind();
+        }
+        return getDefaultDigests()
                 .map(messageDigest -> {
-                    messageDigest.update(bb);
-                    return new Trait(messageDigest);
+                        messageDigest.update(bb);
+                        return new Trait(
+                                Trait.safeAlgorithmName(messageDigest.getAlgorithm()),
+                                CryptUtils.toHexString(Benchmark.bench(() -> messageDigest.digest(), messageDigest.getAlgorithm()+" digest: ${millis}ms"))
+                        );
                 })
                 .collect(Collectors.toList());
     }
@@ -336,11 +361,11 @@ public final class CryptUtils {
         return new Trait(digest);
     }
 
-    public static Description makeDescription(byte[] bytes) {
-        return new Description(CryptUtils.hashAll(bytes));
+    public static Description makeDescription(ByteBuffer byteBuffer) {
+        return Benchmark.bench(() -> new Description(CryptUtils.hashAll(byteBuffer)), "MakeDescription: ${millis}ms");
     }
 
     public static Description makeDescription(Path path) {
-        return new Description(CryptUtils.hashAll(path));
+        return Benchmark.bench(() -> new Description(CryptUtils.hashAll(path)), "MakeDescription: ${millis}ms");
     }
 }
