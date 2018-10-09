@@ -122,7 +122,7 @@ public final class CryptUtils {
     public static KeyPair generateKeyPair(String alg, int length) throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(alg);
         keyPairGen.initialize(length);
-        return keyPairGen.generateKeyPair();
+        return new KeyPair(alg, keyPairGen.generateKeyPair());
     }
 
     public static Cipher getDefaultCipher() {
@@ -241,9 +241,13 @@ public final class CryptUtils {
         try {
             return Optional.of(Cipher.getInstance(algorithm));
         } catch (Exception e) {
-            //logger.log(Level.WARNING, "Couldn't obtain ciper \""+algorithm+"\" :", e);
+            //LOGGER.log(Level.WARNING, "Couldn't obtain ciper \""+algorithm+"\" :", e);
             return Optional.empty();
         }
+    }
+
+    public static String toHexString(ByteBuffer byteBuffer) {
+        return toHexString(byteBuffer.array());
     }
 
     public static String toHexString(byte[] bytes) {
@@ -258,6 +262,16 @@ public final class CryptUtils {
         }
 
         return hexString.toString();
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
     public static String hash(String algorithm, byte[] bytes) {
@@ -367,5 +381,17 @@ public final class CryptUtils {
 
     public static Description makeDescription(Path path) {
         return Benchmark.bench(() -> new Description(CryptUtils.hashAll(path)), "MakeDescription: ${millis}ms");
+    }
+
+    public static String hash(ByteBuffer byteBuffer) {
+        if (byteBuffer.position()>0) {
+            byteBuffer.rewind();
+        }
+        return getDefaultDigests().findFirst()
+                .map(messageDigest -> {
+                    messageDigest.update(byteBuffer);
+                    return CryptUtils.toHexString(messageDigest.digest());
+                })
+                .orElse(null);
     }
 }

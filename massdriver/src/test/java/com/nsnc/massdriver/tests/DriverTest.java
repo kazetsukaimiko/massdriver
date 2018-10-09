@@ -65,9 +65,6 @@ public class DriverTest extends FileSystemTest {
                 .sum();
 
         assertThat(allChunksSize, equalTo(Files.size(randomFile)));
-
-
-
     }
 
 

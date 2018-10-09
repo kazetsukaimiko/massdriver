@@ -11,9 +11,6 @@ import com.nsnc.massdriver.crypt.CryptUtils;
  *
  */
 public class MemoryChunk extends BaseChunk {
-
-    private ByteBuffer byteBuffer;
-
     @Override
     public Description getDescription() {
         if (description == null) {

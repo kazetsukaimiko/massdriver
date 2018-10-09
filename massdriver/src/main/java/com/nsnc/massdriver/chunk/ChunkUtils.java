@@ -25,7 +25,7 @@ import com.nsnc.massdriver.data.ByteStream;
 
 public class ChunkUtils {
 
-    protected static final Logger logger = Logger.getLogger(ChunkUtils.class.getName());
+    protected static final Logger LOGGER = Logger.getLogger(ChunkUtils.class.getName());
 
     public static Path writeChunkStream(Path filePath, Stream<? extends Chunk> chunkStream) throws IOException {
         ByteStream.stream(filePath, chunkStream.map(Chunk::getData));

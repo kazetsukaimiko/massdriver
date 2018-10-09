@@ -39,7 +39,6 @@ public abstract class Pool<K> {
     }
 
     public abstract K generate() throws NoSuchAlgorithmException;
-    public abstract String uniqueIdentifier(K key);
 
     public void clear() {
         keys = new HashMap<>();
@@ -70,11 +69,23 @@ public abstract class Pool<K> {
                 .map(Pool::safeFetch)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toMap(
-                        this::uniqueIdentifier,
+                        Object::toString,
                         Function.identity(),
                         (k1, k2) -> k2
                 ));
     }
 
+    public K randomMember() {
+        if (keys.size()>0) {
+            Random random = new Random(System.currentTimeMillis());
+            int index = random.nextInt(keys.size());
+            for (K k : keys.values()) {
+                if (index-- <= 0) {
+                    return k;
+                }
+            }
+        }
+        return null;
+    }
 
 }
