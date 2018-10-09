@@ -1,0 +1,17 @@
+#
+
+*~
+DEADJOE
+*.class
+*.jar
+*.war
+*.ear
+target/*
+*/target/*
+build/*
+.gradle/*
+.gradle
+.idea
+.idea/*
+*.iml
+dependency-reduced-pom.xml
