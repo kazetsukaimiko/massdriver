@@ -3,10 +3,7 @@ package com.nsnc.massdriver.tests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.util.logging.Logger;
 
 /**
  * Created by luna on 8/7/17.
@@ -22,8 +19,8 @@ public abstract class MemoryTest extends TimedTest {
     public void initMemory() {
         System.gc();
         usedMemory = getCurrentUsedMemory();
-        logger.info("Memory going into "+getMethodName()+":" + hrbc(usedMemory));
-        logger.info("Max Memory/Total Memory: " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
+        LOGGER.info("Memory going into "+getMethodName()+":" + hrbc(usedMemory));
+        LOGGER.info("Max Memory/Total Memory: " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
     }
 
     private long getCurrentUsedMemory() {
@@ -43,11 +40,11 @@ public abstract class MemoryTest extends TimedTest {
         long usedMemory = getCurrentUsedMemory();
         System.gc();
         long postGCUsedMemory = getCurrentUsedMemory();
-        logger.info("Memory going out of "+getMethodName()+ ": " +
+        LOGGER.info("Memory going out of "+getMethodName()+ ": " +
                 hrbc(usedMemory) + " (" + ((usedMemory>this.usedMemory)? "+":"-") + hrbc(usedMemory-this.usedMemory) + ") / " +
                 hrbc(postGCUsedMemory) + " (" + ((postGCUsedMemory>this.usedMemory)? "+":"-") + hrbc(postGCUsedMemory-this.usedMemory) + ")"
         );
-        logger.info("Max Memory/Total Memory ("+getMethodName()+", Previous): " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
+        LOGGER.info("Max Memory/Total Memory ("+getMethodName()+", Previous): " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
     }
 
 

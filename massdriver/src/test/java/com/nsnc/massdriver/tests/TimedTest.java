@@ -3,14 +3,11 @@ package com.nsnc.massdriver.tests;
 import org.junit.After;
 import org.junit.Before;
 
-import java.util.logging.Logger;
-
 /**
  * Created by luna on 8/7/17.
  */
-public class TimedTest {
+public class TimedTest extends BaseTest {
     private long startMillis = 0;
-    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     @Before
     public void setStartMillis() {
@@ -21,6 +18,6 @@ public class TimedTest {
     public void calculateTestTime() {
         long finishMillis = System.currentTimeMillis();
         long time = finishMillis-startMillis;
-        logger.info("Test time: "+time+"ms");
+        LOGGER.info("Test time: "+time+"ms");
     }
 }

@@ -1,38 +1,50 @@
 package com.nsnc.massdriver.asset;
 
-import com.nsnc.massdriver.Description;
-import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.chunk.ChunkMetadata;
 import com.nsnc.massdriver.chunk.ChunkUtils;
-import com.nsnc.massdriver.chunk.MemoryChunk;
 import com.nsnc.massdriver.crypt.CryptUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FileAsset extends BaseAsset implements Asset {
-    private final Path id;
+    private static final Logger LOGGER = Logger.getLogger(FileAsset.class.getName());
+    private final Path path;
 
-    public FileAsset(Path id) throws IOException {
-        this.id = id;
-        setSize(Files.size(id));
-        setName(id.getFileName().toString());
-        setContentType(Files.probeContentType(id));
-        setDescription(CryptUtils.makeDescription(id));
+    public FileAsset(Path path) throws IOException {
+        this.path = path;
+        setSize(Files.size(path));
+        setName(path.getFileName().toString());
+        setContentType(Files.probeContentType(path));
+        setTraits(CryptUtils.makeDescription(path));
         setUrn(makeUrn(
                 getName(),
                 getContentType(),
-                getDescription()
+                getTraits()
         ));
     }
 
     @Override
-    public List<Description> getChunkInfo() throws IOException {
-        return ChunkUtils.chunkStream(id)
-                .map(Chunk::getDescription)
-                .collect(Collectors.toList());
+    public List<ChunkMetadata> getChunkMetadata() {
+        if (super.getChunkMetadata() == null) {
+            try {
+                setChunkMetadata(ChunkUtils.chunkStream(path)
+                        .map(ChunkMetadata.class::cast)
+                        .collect(Collectors.toList()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        return super.getChunkMetadata();
+    }
+
+    public Path getPath() {
+        return path;
     }
 }
