@@ -17,7 +17,7 @@ public class SecretKeyPool extends EncryptionPool<SecretKey> {
         return CryptUtils.generateBiDirectionalKey(getAlgorithm(), getLength());
     }
 
-    @Override
+    //@Override
     public String uniqueIdentifier(SecretKey key) {
         return CryptUtils.hash("SHA-256", key.getEncoded());
     }

@@ -11,6 +11,6 @@ public interface ChunkSource {
     Optional<Chunk> retrieveChunk(Description chunkDescription);
     Stream<Chunk> findChunksByTraits(Trait... traits);
 
-    Chunk encrypt(Chunk chunk, KeyPairPool KeyPairPool);
-    Chunk decrypt(Chunk encryptedChunk, KeyPairPool KeyPairPool);
+    //Chunk encrypt(Chunk chunk, KeyPairPool KeyPairPool);
+    //Chunk decrypt(Chunk encryptedChunk, KeyPairPool KeyPairPool);
 }

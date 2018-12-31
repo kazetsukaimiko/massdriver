@@ -1,37 +1,28 @@
 package com.nsnc.massdriver.tests;
 
-
-import com.nsnc.massdriver.asset.Asset;
-import com.nsnc.massdriver.chunk.Chunk;
-import com.nsnc.massdriver.chunk.MemoryChunk;
-import com.nsnc.massdriver.driver.Driver;
-import com.nsnc.massdriver.driver.MapAccessDriver;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
-public class DriverTest extends FileSystemTest {
+import com.nsnc.massdriver.asset.Asset;
+import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.driver.Driver;
 
-    protected Driver driver;
+public abstract class DriverTest extends FileSystemTest {
 
-    @Before
-    public void init() {
-        driver = new MapAccessDriver();
-    }
+    public abstract Driver getDriver();
 
-
-    @Test
+    @BeforeEach
     public void testDriverFunctionality() throws IOException {
-        Asset a = driver.persist(this.randomFile);
+        System.out.println("DriverTest.before");
+        Asset a = getDriver().persist(this.randomFile);
 
         a.getDescription()
                 .getTraits()
@@ -40,7 +31,7 @@ public class DriverTest extends FileSystemTest {
         System.out.println("File size: \n"+Files.size(randomFile));
 
         List<Chunk> memoryChunks = a.getChunkInfo().stream()
-                .map(driver::retrieveChunk)
+                .map(getDriver()::retrieveChunk)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
 
@@ -55,16 +46,16 @@ public class DriverTest extends FileSystemTest {
 
 
         // Number of chunks match?
-        assertThat((double) a.getChunkInfo().size(), equalTo(Math.ceil(Files.size(randomFile)/((double) Chunk.DEFAULT_CHUNK_SIZE))));
+        assertEquals((double) a.getChunkInfo().size(), Math.ceil(Files.size(randomFile)/((double) Chunk.DEFAULT_CHUNK_SIZE)));
 
         long allChunksSize = a.getChunkInfo().stream()
-                .map(driver::retrieveChunk)
+                .map(getDriver()::retrieveChunk)
                 .flatMap(Optional::stream)
                 .map(Chunk::getLength)
                 .mapToLong(l -> l)
                 .sum();
 
-        assertThat(allChunksSize, equalTo(Files.size(randomFile)));
+        assertEquals(Files.size(randomFile), allChunksSize);
     }
 
 

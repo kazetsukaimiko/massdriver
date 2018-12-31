@@ -1,9 +1,9 @@
 package com.nsnc.massdriver.tests;
 
-import org.junit.After;
-import org.junit.Before;
-
 import java.util.logging.Logger;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Created by luna on 8/7/17.
@@ -12,12 +12,12 @@ public class TimedTest {
     private long startMillis = 0;
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
-    @Before
+    @BeforeEach
     public void setStartMillis() {
         startMillis = System.currentTimeMillis();
     }
 
-    @After
+    @AfterEach
     public void calculateTestTime() {
         long finishMillis = System.currentTimeMillis();
         long time = finishMillis-startMillis;

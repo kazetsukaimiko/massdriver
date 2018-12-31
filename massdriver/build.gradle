@@ -30,7 +30,9 @@ dependencies {
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version:'2.9.5'
 
     // Testing
-    testCompile group: 'junit', name: 'junit', version:'4.12'
+    String junitVersion = "5.3.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }
 
 task packageTests(type: Jar) {

@@ -1,16 +1,21 @@
 package com.nsnc.massdriver.tests;
 
-import com.nsnc.massdriver.crypt.CryptUtils;
-import org.junit.After;
-import org.junit.Before;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.FileAttribute;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.UUID;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
+import com.nsnc.massdriver.crypt.CryptUtils;
 
 /**
  * Created by luna on 8/7/17.
@@ -21,14 +26,15 @@ public abstract class FileSystemTest extends MemoryTest {
     protected Path randomDirectory = null;
     protected Path randomFile = null;
 
-    @Before
+    @BeforeEach
     public void createRandomFiles() throws IOException {
+        System.out.println("FileSystemTest.before");
         randomEmptyDirectory = randomDirectory();
         randomDirectory = randomDirectory();
         randomFile = randomFile(randomDirectory);
     }
 
-    @After
+    @AfterEach
     public void cleanupRandomFiles() throws IOException {
         deleteDirectory(randomDirectory);
         deleteDirectory(randomEmptyDirectory);

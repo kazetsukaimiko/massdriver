@@ -80,7 +80,7 @@ public class MapAccessDriver implements Driver {
     @Override
     public Stream<Asset> findAssetsByTraits(Trait... traits) {
         return assetMap.values().stream()
-                .filter(a -> a.getDescription().getTraits().containsAll(Arrays.asList(traits)));
+                .filter(a -> traits.length <= 0 || a.getDescription().getTraits().containsAll(Arrays.asList(traits)));
     }
 
     @Override
@@ -114,7 +114,7 @@ public class MapAccessDriver implements Driver {
 
         ChunkUtils.chunkStream(path)
                 .peek(System.out::println)
-                .forEach(c -> persistChunk(c));
+                .forEach(this::persistChunk);
         return asset;
     }
 }

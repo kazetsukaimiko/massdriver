@@ -1,19 +1,21 @@
 package com.nsnc.massdriver.tests;
 
-import com.nsnc.massdriver.crypt.CryptUtils;
-import com.nsnc.massdriver.crypt.KeyPairPool;
-import com.nsnc.massdriver.crypt.SecretKeyPool;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import javax.crypto.SecretKey;
+
+import org.junit.jupiter.api.Test;
+
+import com.nsnc.massdriver.crypt.CryptUtils;
+import com.nsnc.massdriver.crypt.KeyPairPool;
+import com.nsnc.massdriver.crypt.SecretKeyPool;
 
 public class CryptUtilsTest extends MemoryTest {
 

@@ -12,6 +12,6 @@ import java.nio.file.Path;
 
 public interface Driver extends AssetSink, AssetSource, ChunkSink, ChunkSource {
     Asset persist(Path path) throws IOException;
-    Asset encrypt(Asset asset, KeyPairPool KeyPairPool);
-    Asset descrypt(Asset asset, KeyPairPool KeyPairPool);
+    //Asset encrypt(Asset asset, KeyPairPool KeyPairPool);
+    //Asset descrypt(Asset asset, KeyPairPool KeyPairPool);
 }

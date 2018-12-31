@@ -1,15 +1,17 @@
 package com.nsnc.massdriver.tests;
 
-import com.nsnc.massdriver.chunk.Chunk;
-import com.nsnc.massdriver.chunk.ChunkUtils;
-import com.nsnc.massdriver.crypt.CryptUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
+
+import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.chunk.ChunkUtils;
+import com.nsnc.massdriver.crypt.CryptUtils;
 
 /**
  * Created by luna on 8/7/17.
@@ -24,7 +26,7 @@ public class ChunkUtilsTest extends FileSystemTest {
     public void testCopy(Stream<? extends Chunk> chunkStream) throws IOException {
         Path randomCopy = randomPath(randomDirectory);
         ChunkUtils.writeChunkStream(randomCopy, chunkStream);
-        Assert.assertEquals("Files Must Match Size", Files.size(randomFile), Files.size(randomCopy));
+        assertEquals(Files.size(randomFile), Files.size(randomCopy), "Files Must Match Size");
     }
 
     @Test
@@ -42,7 +44,7 @@ public class ChunkUtilsTest extends FileSystemTest {
         logger.info("Hashing Copy...");
         String copyHash = CryptUtils.hash("MD5", randomCopy);
 
-        Assert.assertEquals("Files Must Match", fileHash, copyHash);
+        assertEquals("Files Must Match", fileHash, copyHash);
     }
 
     @Test
