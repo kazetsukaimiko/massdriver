@@ -1,6 +1,7 @@
 package com.nsnc.massdriver.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,28 +14,42 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.asset.Asset;
+import com.nsnc.massdriver.asset.FileAsset;
 import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.chunk.ChunkMetadata;
+import com.nsnc.massdriver.chunk.Location;
+import com.nsnc.massdriver.crypt.CryptUtils;
 import com.nsnc.massdriver.driver.Driver;
+import com.nsnc.massdriver.driver.MapAccessDriver;
+import com.nsnc.massdriver.index.RecursingIndexer;
 
-    public abstract Driver make() throws IOException;
+public abstract class DriverTest extends FileSystemTest {
 
-    @Test
-    public void basicTest() throws IOException {
-        basicTest(make());
+    private Driver driver;
+    public abstract Driver makeDriver() throws IOException;
+
+    @BeforeEach
+    public void setupDriver() throws IOException {
+        driver = makeDriver();
+    }
+
+    public Driver getDriver() {
+        return driver;
     }
 
     @Test
-    public void indexTest() throws IOException {
-        indexTest(make());
+    public void basicTest() throws IOException {
+        basicTest(driver);
     }
 
     @Test
     public void writebackTest() throws IOException {
-        Driver driver = make();
-        indexTest(driver);
-        writebackTest(driver);
+        bench.bench(() -> indexTest(driver), "IndexTest Total Time");
+        bench.bench(() -> writebackTest(driver), "WritebackTest Total Time");
     }
 
     private void writebackTest(Driver driver) throws IOException {
@@ -55,7 +70,6 @@ import com.nsnc.massdriver.driver.Driver;
         //asset.getChunkMetadata()
     }
 
-
     public void basicTest(Driver driver) throws IOException {
         FileAsset fileAsset = new FileAsset(this.randomFile);
         List<Trait> traitList = driver.persistAsset(fileAsset);
@@ -70,15 +84,18 @@ import com.nsnc.massdriver.driver.Driver;
 
                 });
         assertTrue(newAsset.isPresent());
+    }
 
 
-        a.getDescription()
+    public void assetTest(Asset a, Driver driver) throws IOException {
+
+        a
                 .getTraits()
                 .forEach(System.out::println);
 
         System.out.println("File size: \n"+Files.size(randomFile));
 
-        List<Chunk> memoryChunks = a.getChunkInfo().stream()
+        List<Chunk> memoryChunks = a.getChunkMetadata().stream()
                 .map(driver::retrieveChunk)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
@@ -94,19 +111,46 @@ import com.nsnc.massdriver.driver.Driver;
 
 
         // Number of chunks match?
-        assertThat((double) a.getChunkInfo().size(), equalTo(Math.ceil(Files.size(randomFile)/((double) Chunk.DEFAULT_CHUNK_SIZE))));
+        assertEquals((double) a.getChunkMetadata().size(), Math.ceil(Files.size(randomFile)/((double) Chunk.DEFAULT_CHUNK_SIZE)));
 
-        long allChunksSize = a.getChunkInfo().stream()
+
+        long allRecordedChunksSize = a.getChunkMetadata().stream()
+                .map(ChunkMetadata::getLength)
+                .mapToLong(l -> l)
+                .sum();
+
+        assertEquals(allRecordedChunksSize, Files.size(randomFile));
+
+        long allChunksSize = a.getChunkMetadata().stream()
                 .map(driver::retrieveChunk)
                 .flatMap(Optional::stream)
                 .map(Chunk::getLength)
                 .mapToLong(l -> l)
                 .sum();
 
-        assertThat(allChunksSize, equalTo(Files.size(randomFile)));
+        assertEquals(allChunksSize, Files.size(randomFile));
+
     }
 
+    public void indexTest(Driver driver) throws IOException {
+        RecursingIndexer ri = new RecursingIndexer(driver);
+        bench.bench(() -> Files.walkFileTree(randomTree, ri), "Walk Full File Tree");
+        ri.getDirectoriesVisited()
+                .forEach(System.out::println);
 
+
+        bench.bench(() -> {
+            driver.allAssets().forEach(System.out::println);
+
+            // All Files Visited = Files now Assets in MD
+            assertEquals(ri.getFilesVisited().size(), driver.allAssets().count());
+
+            // All File Paths visited = Locations in MD
+            assertEquals(ri.getFilesVisited().size(), driver.allLocations().map(Location::getPath).distinct().count());
+
+            //assertThat(ri.getDirectoriesVisited().size(), equalTo(ri.getIndexed().size()));
+        }, "Driver Verification");
+    }
 
 
 }

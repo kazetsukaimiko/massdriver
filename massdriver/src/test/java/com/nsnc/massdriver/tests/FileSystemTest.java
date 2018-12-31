@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -23,10 +25,6 @@ import com.nsnc.massdriver.crypt.CryptUtils;
 public abstract class FileSystemTest extends MemoryTest {
 
     protected static Path rootDirectory = Paths.get("/tmp/massdriver/");
-
-    @BeforeEach
-    public void createRandomFiles() throws IOException {
-        System.out.println("FileSystemTest.before");
     protected static Path randomTree = null;
     protected static Path randomEmptyDirectory = null;
     protected static Path randomDirectory = null;
@@ -34,6 +32,7 @@ public abstract class FileSystemTest extends MemoryTest {
 
     @BeforeAll
     public static void createRandomFiles() throws IOException {
+        System.out.println("FileSystemTest.before");
         LOGGER.info("Random Empty Directory");
         randomEmptyDirectory = randomDirectory();
         LOGGER.info("Random Directory");
@@ -122,7 +121,7 @@ public abstract class FileSystemTest extends MemoryTest {
     }
 
     public static int randomSize() {
-        int multiplier = 5;
+        int multiplier = 3;
         int variation = 1024-900;
         return (1024-RANDOM.nextInt(variation)) * (1024-RANDOM.nextInt(variation)) * multiplier;
     }

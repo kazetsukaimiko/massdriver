@@ -12,13 +12,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.nsnc.massdriver.tests.DriverTest;
+import com.nsnc.massdriver.tests.NitriteDriverTest;
 
 import ru.serce.jnrfuse.Mountable;
 
 /**
  * Created by luna on 8/7/17.
  */
-public abstract class FuseTest extends DriverTest {
+public abstract class FuseTest extends NitriteDriverTest {
 
     public abstract Mountable getMountable();
 

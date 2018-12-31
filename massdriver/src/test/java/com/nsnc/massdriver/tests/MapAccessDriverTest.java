@@ -5,7 +5,7 @@ import com.nsnc.massdriver.driver.MapAccessDriver;
 
 public class MapAccessDriverTest extends DriverTest {
     @Override
-    public Driver make() {
+    public final Driver makeDriver() {
         return new MapAccessDriver();
     }
 }

@@ -4,6 +4,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 public class Benchmark {
+    private static final String SUBSTITUTE = "${millis}";
+    private long lastEntry = System.currentTimeMillis();
     public static final Logger logger = Logger.getLogger(Benchmark.class.getName());
 
 

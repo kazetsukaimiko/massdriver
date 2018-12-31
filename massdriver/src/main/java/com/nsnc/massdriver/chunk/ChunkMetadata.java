@@ -7,6 +7,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Class that Describes a Chunk.
+ */
 public class ChunkMetadata {
     private List<Trait> traits;
     private long position;

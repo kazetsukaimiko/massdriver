@@ -6,6 +6,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Class that points to exactly on the filesystem where a Chunk's data can be found.
+ */
 public class Location extends ChunkMetadata {
     private Path path;
     private long storagePosition;

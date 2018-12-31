@@ -12,6 +12,10 @@ import com.nsnc.massdriver.driver.NoSuchAssetException;
 import com.nsnc.massdriver.nitrite.entity.NitriteAsset;
 import com.nsnc.massdriver.nitrite.entity.NitriteChunkMetadata;
 import com.nsnc.massdriver.nitrite.entity.NitriteLocation;
+import com.nsnc.massdriver.util.Bench;
+
+import org.dizitart.no2.IndexOptions;
+import org.dizitart.no2.IndexType;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.Cursor;
 import org.dizitart.no2.objects.ObjectFilter;
@@ -37,11 +41,13 @@ public class NitriteDriver implements Driver {
     private static final String TRAITS_FIELD = "traits";
     private static final String CHUNK_METADATA_FIELD = "chunkMetadata";
 
+
     private final Path fragmentPath;
     private final Nitrite nitrite;
     private final ObjectRepository<NitriteAsset> assetRepository;
     private final ObjectRepository<NitriteChunkMetadata> metadataRepository;
     private final ObjectRepository<NitriteLocation> locationRepository;
+    private final Bench bench = new Bench(LOGGER);
 
     public NitriteDriver(Path fragmentPath, Nitrite nitrite) {
         this.fragmentPath = fragmentPath;
@@ -49,7 +55,9 @@ public class NitriteDriver implements Driver {
         this.assetRepository = nitrite.getRepository(NitriteAsset.class);
         this.metadataRepository = nitrite.getRepository(NitriteChunkMetadata.class);
         this.locationRepository = nitrite.getRepository(NitriteLocation.class);
+        ensureIndexes();
     }
+
 
 
     @Override
@@ -65,26 +73,28 @@ public class NitriteDriver implements Driver {
 
     @Override
     public List<Trait> persistAsset(Asset asset) throws IOException {
-        LOGGER.info("Persist Asset: " + asset);
-        Optional<Asset> existingAsset = retrieveAsset(asset.getTraits());
+        return bench.bench(() -> {
+            Optional<Asset> existingAsset = retrieveAsset(asset.getTraits());
 
-        if (existingAsset.isPresent()) {
-            LOGGER.info("Existing Asset Found: " + existingAsset.get());
-            return existingAsset.get().getTraits();
-        }
-        NitriteAsset nitriteAsset = new NitriteAsset(asset);
-        assetRepository.insert(nitriteAsset);
+            if (existingAsset.isPresent()) {
+                LOGGER.info("Existing Asset Found: " + existingAsset.get());
+                return existingAsset.get().getTraits();
+            }
+            NitriteAsset nitriteAsset = new NitriteAsset(asset);
+            assetRepository.insert(nitriteAsset);
 
-        if (asset instanceof FileAsset) {
-            LOGGER.info("Recording FileAsset Chunk Locations");
-            Path path = ((FileAsset) asset).getPath();
-            nitriteAsset.getChunkMetadata().stream()
-                    .map(chunkMetadata -> new NitriteLocation(chunkMetadata, path))
-                    .forEach(locationRepository::insert);
-
-        }
-        nitrite.commit();
-        return nitriteAsset.getTraits();
+            if (asset instanceof FileAsset) {
+                LOGGER.info("Recording FileAsset Chunk Locations");
+                bench.bench(() -> {
+                    Path path = ((FileAsset) asset).getPath();
+                    nitriteAsset.getChunkMetadata().stream()
+                            .map(chunkMetadata -> new NitriteLocation(chunkMetadata, path))
+                            .forEach(locationRepository::insert);
+                }, "Recording FileAsset Chunk Locations");
+            }
+            nitrite.commit();
+            return nitriteAsset.getTraits();
+        }, "Persist Asset: " + asset);
     }
 
     @Override
@@ -103,14 +113,11 @@ public class NitriteDriver implements Driver {
 
     @Override
     public Stream<Asset> findAssetsByTraits(Trait... traits) {
-        LOGGER.info("Find Assets By Traits:");
-        LOGGER.info(Stream.of(traits
-        ).map(Trait::toString).collect(Collectors.joining(";")));
-        return StreamSupport
+        return bench.bench(() -> StreamSupport
                 .stream(assetRepository
                         .find(ofTraits(Stream.of(traits)))
                         .spliterator(), false)
-            .map(Asset.class::cast);
+            .map(Asset.class::cast), "Find Assets By Traits: ");
     }
 
     @Override
@@ -191,4 +198,13 @@ public class NitriteDriver implements Driver {
         ));
     }
 
+
+
+    public void ensureIndexes() {
+        Stream.of(assetRepository, locationRepository)
+                .map(ObjectRepository::getDocumentCollection)
+                .forEach(nitriteCollection -> nitriteCollection.createIndex(TRAITS_FIELD, IndexOptions.indexOptions(
+                        IndexType.Unique
+                )));
+    }
 }

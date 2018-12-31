@@ -1,4 +1,4 @@
-package com.nsnc.massdriver.fuse;
+package com.nsnc.massdriver.fuse.easy;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,6 +9,7 @@ import com.nsnc.massdriver.fuse.easy.EasyDirectory;
 
 public class EasyNodeTest {
 
+	// Basic functionality around Easy* Heirarchy.
 	@Test
 	public void testEasyNodePathAndName() {
 

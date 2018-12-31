@@ -91,8 +91,8 @@ public class MapAccessDriver implements Driver {
 
     @Override
     public Stream<Asset> findAssetsByTraits(Trait... traits) {
-        return assetMap.values().stream()
-                .filter(a -> traits.length <= 0 || a.getDescription().getTraits().containsAll(Arrays.asList(traits)));
+        return assets.stream()
+                .filter(asset -> Trait.matches(Stream.of(traits).collect(Collectors.toList()), asset.getTraits()));
     }
 
     @Override

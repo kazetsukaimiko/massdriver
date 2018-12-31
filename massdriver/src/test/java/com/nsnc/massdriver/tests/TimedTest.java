@@ -5,11 +5,14 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import com.nsnc.massdriver.util.Bench;
+
 /**
  * Created by luna on 8/7/17.
  */
-public class TimedTest extends BaseTest {
+public abstract class TimedTest extends BaseTest {
     private long startMillis = 0;
+    public Bench bench = new Bench(Logger.getLogger(getClass().getName()));
 
     @BeforeEach
     public void setStartMillis() {

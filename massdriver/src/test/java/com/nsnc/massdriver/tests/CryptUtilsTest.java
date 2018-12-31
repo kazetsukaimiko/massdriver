@@ -1,12 +1,10 @@
 package com.nsnc.massdriver.tests;
 
-import com.nsnc.massdriver.Trait;
-import com.nsnc.massdriver.crypt.CryptUtils;
-import com.nsnc.massdriver.crypt.KeyPairPool;
-import com.nsnc.massdriver.crypt.SecretKeyPool;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.crypto.SecretKey;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -14,9 +12,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import javax.crypto.SecretKey;
+
+import org.junit.jupiter.api.Test;
+
+import com.nsnc.massdriver.Trait;
+import com.nsnc.massdriver.crypt.CryptUtils;
+import com.nsnc.massdriver.crypt.KeyPairPool;
+import com.nsnc.massdriver.crypt.SecretKeyPool;
 
 public class CryptUtilsTest extends FileSystemTest {
 

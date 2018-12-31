@@ -27,8 +27,7 @@ public class NitriteDriverTest extends DriverTest {
     private Nitrite nitrite;
     private NitriteDriver driver;
 
-    @Override
-    public Driver make() throws IOException {
+    public final Driver makeDriver() throws IOException {
         Files.deleteIfExists(databaseFile);
         nitrite = Nitrite.builder()
                 .filePath(databaseFile.toFile())
