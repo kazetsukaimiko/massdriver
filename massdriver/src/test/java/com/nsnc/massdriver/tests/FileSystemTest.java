@@ -57,7 +57,7 @@ public abstract class FileSystemTest extends MemoryTest {
         return Files.createDirectories(Paths.get(rootDirectory.toString(),"/seed/"));
     }
 
-    private static void deleteDirectory(Path directory) throws IOException {
+    public static void deleteDirectory(Path directory) throws IOException {
         if (directory.toFile().exists()) {
             Files.walk(directory)
                     .sorted(Comparator.reverseOrder())
