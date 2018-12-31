@@ -8,9 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 /**
  * Created by luna on 8/7/17.
  */
-public class TimedTest {
+public class TimedTest extends BaseTest {
     private long startMillis = 0;
-    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     @BeforeEach
     public void setStartMillis() {
@@ -21,6 +20,6 @@ public class TimedTest {
     public void calculateTestTime() {
         long finishMillis = System.currentTimeMillis();
         long time = finishMillis-startMillis;
-        logger.info("Test time: "+time+"ms");
+        LOGGER.info("Test time: "+time+"ms");
     }
 }

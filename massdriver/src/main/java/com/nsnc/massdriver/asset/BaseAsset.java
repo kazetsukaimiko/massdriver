@@ -1,7 +1,10 @@
 package com.nsnc.massdriver.asset;
 
-import com.nsnc.massdriver.Description;
+import com.nsnc.massdriver.Trait;
+import com.nsnc.massdriver.chunk.ChunkMetadata;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -10,9 +13,22 @@ import java.util.Objects;
 public abstract class BaseAsset implements Asset {
     private String name;
     private long size;
-    private Description description;
+    private List<Trait> traits;
     private String contentType;
     private String urn;
+    private List<ChunkMetadata> chunkMetadata;
+
+    public BaseAsset(Asset asset) {
+        setName(asset.getName());
+        setSize(asset.getSize());
+        setTraits(asset.getTraits());
+        setContentType(asset.getContentType());
+        setUrn(asset.makeUrn(getName(), getContentType(), getTraits()));
+        setChunkMetadata(asset.getChunkMetadata());
+    }
+
+    protected BaseAsset() {
+    }
 
     @Override
     public String getName() {
@@ -32,13 +48,13 @@ public abstract class BaseAsset implements Asset {
 
 
     @Override
-    public Description getDescription() {
-        return description;
-    }
-    public void setDescription(Description description) {
-        this.description = description;
+    public List<Trait> getTraits() {
+        return traits;
     }
 
+    public void setTraits(List<Trait> traits) {
+        this.traits = traits;
+    }
 
     @Override
     public String getContentType() { return contentType; }
@@ -54,24 +70,33 @@ public abstract class BaseAsset implements Asset {
     }
 
     @Override
+    public List<ChunkMetadata> getChunkMetadata() {
+        return chunkMetadata;
+    }
+
+    public void setChunkMetadata(List<ChunkMetadata> chunkMetadata) {
+        this.chunkMetadata = chunkMetadata;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Asset that = (Asset) o;
-        return Objects.equals(getDescription(), that.getDescription());
+        return Trait.matches(getTraits(), that.getTraits());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDescription());
+        return Objects.hash(name, size, contentType);
     }
 
     @Override
     public String toString() {
-        return "BaseAsset{" +
-                ", name='" + name + '\'' +
+        return getClass().getSimpleName()+"{" +
+                "name='" + name + '\'' +
                 ", size=" + size +
-                ", description=" + description +
+                ", traits=" + traits +
                 ", contentType='" + contentType + '\'' +
                 '}';
     }

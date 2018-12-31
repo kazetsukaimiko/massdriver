@@ -22,61 +22,116 @@ import com.nsnc.massdriver.crypt.CryptUtils;
  */
 public abstract class FileSystemTest extends MemoryTest {
 
-    protected Path randomEmptyDirectory = null;
-    protected Path randomDirectory = null;
-    protected Path randomFile = null;
+    protected static Path rootDirectory = Paths.get("/tmp/massdriver/");
 
     @BeforeEach
     public void createRandomFiles() throws IOException {
         System.out.println("FileSystemTest.before");
+    protected static Path randomTree = null;
+    protected static Path randomEmptyDirectory = null;
+    protected static Path randomDirectory = null;
+    protected static Path randomFile = null;
+
+    @BeforeAll
+    public static void createRandomFiles() throws IOException {
+        LOGGER.info("Random Empty Directory");
         randomEmptyDirectory = randomDirectory();
+        LOGGER.info("Random Directory");
         randomDirectory = randomDirectory();
+        LOGGER.info("Random File");
         randomFile = randomFile(randomDirectory);
+        LOGGER.info("Random Tree");
+        randomTree = makeRandomTree();
+    }
+
+
+    public static Path makeRandomTree() throws IOException {
+        randomTree = Paths.get(rootDirectory.toString(), "/tree");
+        LOGGER.info("Clearing: " + randomTree.toString());
+        deleteDirectory(randomTree);
+        randomDirectories(randomTree, 3);
+        return randomTree;
     }
 
     @AfterEach
     public void cleanupRandomFiles() throws IOException {
-        deleteDirectory(randomDirectory);
-        deleteDirectory(randomEmptyDirectory);
+        //deleteDirectory(randomDirectory);
+        //deleteDirectory(randomEmptyDirectory);
     }
 
 
-    protected Path getSeedDirectory() throws IOException {
-        return Files.createDirectories(Paths.get("/tmp/massdriver/seed/"));
+    protected static Path getSeedDirectory() throws IOException {
+        return Files.createDirectories(Paths.get(rootDirectory.toString(),"/seed/"));
     }
 
-    private void deleteDirectory(Path directory) throws IOException {
-        Files.walk(directory)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                //.peek(System.out::println)
-                .forEach(File::delete);
+    public static void deleteDirectory(Path directory) throws IOException {
+        if (directory.toFile().exists()) {
+            Files.walk(directory)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    //.peek(System.out::println)
+                    .forEach(File::delete);
+        }
     }
 
     public static final int BUFFER_SIZE = 1024;
 
-    public Path randomPath(Path base) {
-        return Paths.get(base.toAbsolutePath().toString(), UUID.randomUUID().toString());
+    public static Path randomPath(Path base) {
+        Path path = null;
+        while (path == null || path.toFile().exists()) {
+            path = Paths.get(base.toAbsolutePath().toString(), randomName());
+        }
+        return path;
     }
-    public Path randomDirectory() throws IOException {
-        return randomDirectory(Paths.get("/tmp/massdriver/tests/"));
+    public static Path randomDirectory() throws IOException {
+        Path randomDirectory = Paths.get(rootDirectory.toString(), "/tests/");
+        return randomDirectory(randomDirectory);
     }
-    public Path randomDirectory(Path base) throws IOException {
+    public static Path randomDirectory(Path base) throws IOException {
         Path randomDirectory = randomPath(base);
+        deleteDirectory(randomDirectory);
         Files.createDirectories(randomDirectory);
         return randomDirectory;
     }
+    public static List<Path> randomDirectories(Path base, int max) throws IOException {
+        LOGGER.info("Populating: " + base.toAbsolutePath().toString() + " w/max of " + max);
+        List<Path> randomPaths = new ArrayList<>();
+        if (max > 0) {
+            for (int i=0;i<RANDOM.nextInt(max)+1;i++) {
+                Path subdirectory = randomDirectory(base);
+                randomPaths.addAll(randomFiles(subdirectory, max));
+                randomPaths.addAll(randomDirectories(subdirectory, max-1));
+            }
+        }
+        return randomPaths;
+    }
 
-    public Path setRandomFileSize(long fileSizeBytes) throws IOException {
+    public static List<Path> randomFiles(Path base, int max) throws IOException {
+        List<Path> randomFiles = new ArrayList<>();
+        if (max > 0) {
+            for (int i = 0; i < RANDOM.nextInt(max)+1; i++) {
+                randomFiles.add(randomFile(base));
+            }
+        }
+        return randomFiles;
+    }
+
+    public static Path setRandomFileSize(long fileSizeBytes) throws IOException {
         randomFile = randomFile(randomDirectory, fileSizeBytes);
         return randomFile;
     }
 
-    public Path randomFile(Path directory) throws IOException {
-        return randomFile(directory, 1011*998*51);
+    public static int randomSize() {
+        int multiplier = 5;
+        int variation = 1024-900;
+        return (1024-RANDOM.nextInt(variation)) * (1024-RANDOM.nextInt(variation)) * multiplier;
     }
 
-    public Path randomFile(Path directory, long fileSizeBytes) throws IOException {
+    public static Path randomFile(Path directory) throws IOException {
+        return randomFile(directory, randomSize());
+    }
+
+    public static Path randomFile(Path directory, long fileSizeBytes) throws IOException {
         Path randomFile;
         if (Files.isRegularFile(directory)) { //.toFile().isFile()) {
             randomFile = directory;
@@ -88,8 +143,8 @@ public abstract class FileSystemTest extends MemoryTest {
     }
 
 
-    public Path randomContent(Path randomFile, long fileSizeBytes) throws IOException {
-        logger.info("Making random file "+randomFile.toAbsolutePath().toString()+" of size " + hrbc(fileSizeBytes));
+    public static Path randomContent(Path randomFile, long fileSizeBytes) throws IOException {
+        LOGGER.info("Making random file "+randomFile.toAbsolutePath().toString()+" of size " + hrbc(fileSizeBytes));
         Random random = new Random();
 
         long remaining = fileSizeBytes;
@@ -100,7 +155,7 @@ public abstract class FileSystemTest extends MemoryTest {
             remaining = remaining - buffer.length;
         }
         String md5 = CryptUtils.hash("MD5", randomFile);
-        logger.info("File created: (MD5) " + md5);
+        LOGGER.info("File created: (MD5) " + md5);
         return randomFile;
     }
 }

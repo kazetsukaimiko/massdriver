@@ -3,8 +3,10 @@ package com.nsnc.massdriver.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -29,19 +31,20 @@ public class ChunkUtilsTest extends FileSystemTest {
         assertEquals(Files.size(randomFile), Files.size(randomCopy), "Files Must Match Size");
     }
 
+
     @Test
     public void testMemoryCopyIntegrity() throws IOException {
         testCopyIntegrity(ChunkUtils.chunkStream(randomFile));
     }
     public void testCopyIntegrity(Stream<? extends Chunk> chunkStream) throws IOException {
-        logger.info("Hashing File.");
+        LOGGER.info("Hashing File.");
         String fileHash = CryptUtils.hash("MD5", randomFile);
-        logger.info("Enter TestCopy");
-        logger.info("Making copy Path");
+        LOGGER.info("Enter TestCopy");
+        LOGGER.info("Making copy Path");
         Path randomCopy = randomPath(randomDirectory);
-        logger.info("Issuing Copy");
+        LOGGER.info("Issuing Copy");
         ChunkUtils.writeChunkStream(randomCopy, chunkStream);
-        logger.info("Hashing Copy...");
+        LOGGER.info("Hashing Copy...");
         String copyHash = CryptUtils.hash("MD5", randomCopy);
 
         assertEquals("Files Must Match", fileHash, copyHash);

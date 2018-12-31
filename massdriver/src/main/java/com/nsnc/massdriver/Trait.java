@@ -3,7 +3,9 @@ package com.nsnc.massdriver;
 import com.nsnc.massdriver.crypt.CryptUtils;
 
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Created by luna on 8/2/17.
@@ -73,5 +75,32 @@ public class Trait {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    /**
+     * @param trait
+     * @return True if same Trait with different values, otherwise false.
+     */
+    public boolean fails(Trait trait) {
+        return Optional.ofNullable(trait)
+                .map(Trait::getName)
+                .filter(name -> Objects.equals(getName(), name))
+                .map(name -> !Objects.equals(getContent(), trait.getContent()))
+                .orElse(false);
+    }
+
+    public static boolean matches(List<Trait> search, List<Trait> subject) {
+        return
+                search.stream()
+                        .noneMatch(se -> subject.stream().anyMatch(se::fails))
+                        &&
+                search.stream()
+                        .anyMatch(se -> subject.stream().anyMatch(se::equals))
+                        &&
+                subject.stream()
+                        .noneMatch(su -> search.stream().anyMatch(su::fails))
+                        &&
+                subject.stream()
+                        .anyMatch(su -> search.stream().anyMatch(su::equals));
     }
 }

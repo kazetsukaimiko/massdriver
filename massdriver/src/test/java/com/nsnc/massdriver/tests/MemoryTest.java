@@ -20,8 +20,8 @@ public abstract class MemoryTest extends TimedTest {
     public void initMemory(TestInfo testInfo) {
         System.gc();
         usedMemory = getCurrentUsedMemory();
-        logger.info("Memory going into "+getMethodName(testInfo)+":" + hrbc(usedMemory));
-        logger.info("Max Memory/Total Memory: " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
+        LOGGER.info("Memory going into "+getMethodName(testInfo)+":" + hrbc(usedMemory));
+        LOGGER.info("Max Memory/Total Memory: " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
     }
 
     private long getCurrentUsedMemory() {
@@ -41,11 +41,11 @@ public abstract class MemoryTest extends TimedTest {
         long usedMemory = getCurrentUsedMemory();
         System.gc();
         long postGCUsedMemory = getCurrentUsedMemory();
-        logger.info("Memory going out of "+getMethodName(testInfo)+ ": " +
+        LOGGER.info("Memory going out of "+getMethodName(testInfo)+ ": " +
                 hrbc(usedMemory) + " (" + ((usedMemory>this.usedMemory)? "+":"-") + hrbc(usedMemory-this.usedMemory) + ") / " +
                 hrbc(postGCUsedMemory) + " (" + ((postGCUsedMemory>this.usedMemory)? "+":"-") + hrbc(postGCUsedMemory-this.usedMemory) + ")"
         );
-        logger.info("Max Memory/Total Memory ("+getMethodName(testInfo)+", Previous): " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
+        LOGGER.info("Max Memory/Total Memory ("+getMethodName(testInfo)+", Previous): " + hrbc(getTotalMemory()) + "/" + hrbc(getMaxMemory()));
     }
 
 

@@ -1,8 +1,8 @@
 package com.nsnc.massdriver.asset;
 
 import com.jcabi.urn.URN;
-import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
+import com.nsnc.massdriver.chunk.ChunkMetadata;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,7 +15,9 @@ public interface Asset {
     String getName();
 
     // Generate a URN for the asset
-    String getUrn();
+    default String getUrn() {
+        return makeUrn(getName(), getContentType(), getTraits());
+    }
 
     // The Content Type of the Asset Data.
     String getContentType();
@@ -24,13 +26,13 @@ public interface Asset {
     long getSize();
 
     // A Cumulation of Traits that make up a unique identifier.
-    Description getDescription();
+    List<Trait> getTraits();
 
     // This is the context-agnostic logical connection of the Asset to its Chunks.
-    List<Description> getChunkInfo() throws IOException;
+    List<ChunkMetadata> getChunkMetadata();
 
-    default String makeUrn(String name, String contentType, Description description) {
-        if (description == null) {
+    default String makeUrn(String name, String contentType, List<Trait> traits) {
+        if (traits == null || traits.isEmpty()) {
             return null;
         }
         URN urn = new URN("massdriver", "asset");
@@ -40,7 +42,7 @@ public interface Asset {
         if (contentType != null) {
             urn = urn.param("contentType", contentType);
         }
-        for (Trait trait : description.getTraits()) {
+        for (Trait trait : traits) {
             urn = urn.param(String.valueOf(trait.getName()).replaceAll("-", "_"), trait.getContent());
         }
         return urn.toString();

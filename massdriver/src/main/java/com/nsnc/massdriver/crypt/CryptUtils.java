@@ -1,10 +1,12 @@
 package com.nsnc.massdriver.crypt;
 
-import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.chunk.Chunk;
 import com.nsnc.massdriver.util.Benchmark;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -18,17 +20,12 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 public final class CryptUtils {
 
@@ -116,12 +113,14 @@ public final class CryptUtils {
     }
 
     public static SecretKey generateBiDirectionalKey(String alg, int length) throws NoSuchAlgorithmException {
-        return KeyGenerator.getInstance(alg).generateKey();
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(alg);
+        keyGenerator.init(new SecureRandom());
+        return keyGenerator.generateKey();
     }
 
     public static KeyPair generateKeyPair(String alg, int length) throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(alg);
-        keyPairGen.initialize(length);
+        keyPairGen.initialize(length, new SecureRandom());
         return new KeyPair(alg, keyPairGen.generateKeyPair());
     }
 
@@ -300,7 +299,8 @@ public final class CryptUtils {
                 long remaining = channel.size()-channel.position();
                 ByteBuffer bb = ByteBuffer.allocate((buffer_size<remaining)? buffer_size : (int)remaining);
                 int read = channel.read(bb);
-                messageDigest.update(bb.array());
+                bb.rewind();
+                messageDigest.update(bb);
             }
             return toHexString(messageDigest.digest());
         } catch (Exception e) {
@@ -320,6 +320,7 @@ public final class CryptUtils {
                 ByteBuffer bb = ByteBuffer.allocate((buffer_size<remaining)? buffer_size : (int)remaining);
                 int read = channel.read(bb);
                 for(MessageDigest messageDigest : digestList) {
+                    bb.rewind();
                     messageDigest.update(bb);
                 }
             }
@@ -355,11 +356,9 @@ public final class CryptUtils {
     }
 
     public static List<Trait> hashAll(ByteBuffer bb) {
-        if (bb.position()>0) {
-            bb.rewind();
-        }
         return getDefaultDigests()
                 .map(messageDigest -> {
+                        bb.rewind();
                         messageDigest.update(bb);
                         return new Trait(
                                 Trait.safeAlgorithmName(messageDigest.getAlgorithm()),
@@ -375,12 +374,12 @@ public final class CryptUtils {
         return new Trait(digest);
     }
 
-    public static Description makeDescription(ByteBuffer byteBuffer) {
-        return Benchmark.bench(() -> new Description(CryptUtils.hashAll(byteBuffer)), "MakeDescription: ${millis}ms");
+    public static List<Trait> makeDescription(ByteBuffer byteBuffer) {
+        return Benchmark.bench(() -> CryptUtils.hashAll(byteBuffer), "MakeDescription: ${millis}ms");
     }
 
-    public static Description makeDescription(Path path) {
-        return Benchmark.bench(() -> new Description(CryptUtils.hashAll(path)), "MakeDescription: ${millis}ms");
+    public static List<Trait> makeDescription(Path path) {
+        return Benchmark.bench(() -> CryptUtils.hashAll(path), "MakeDescription: ${millis}ms");
     }
 
     public static String hash(ByteBuffer byteBuffer) {

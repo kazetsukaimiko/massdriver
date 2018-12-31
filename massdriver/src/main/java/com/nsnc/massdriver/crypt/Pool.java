@@ -65,14 +65,12 @@ public abstract class Pool<K> {
         List<Future<K>> futureKeys = IntStream.range(0, size - keys.size())
                 .mapToObj(i -> executor.submit(this::generate))
                 .collect(Collectors.toList());
-        keys = futureKeys.stream()
+        Map<String, K> keyPool = new HashMap<>();
+        futureKeys.stream()
                 .map(Pool::safeFetch)
                 .flatMap(Optional::stream)
-                .collect(Collectors.toMap(
-                        Object::toString,
-                        Function.identity(),
-                        (k1, k2) -> k2
-                ));
+                .forEach(k -> keyPool.put(k.toString(), k));
+        keys = keyPool;
     }
 
     public K randomMember() {

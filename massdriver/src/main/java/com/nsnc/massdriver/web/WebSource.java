@@ -1,15 +1,15 @@
 package com.nsnc.massdriver.web;
 
-import com.nsnc.massdriver.Description;
 import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.asset.Asset;
 import com.nsnc.massdriver.asset.AssetSource;
 import com.nsnc.massdriver.chunk.Chunk;
+import com.nsnc.massdriver.chunk.ChunkMetadata;
 import com.nsnc.massdriver.chunk.ChunkSource;
-import com.nsnc.massdriver.chunk.MemoryChunk;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -32,7 +32,7 @@ public interface WebSource extends AssetSource, ChunkSource {
     @POST
     @Path(ASSET_BY_DESC_PATH)
     @Override
-    Optional<Asset> retrieveAsset(Description description);
+    Optional<Asset> retrieveAsset(List<Trait> description);
 
     @POST
     @Path(ASSETS_BY_TRAITS_PATH)
@@ -42,10 +42,12 @@ public interface WebSource extends AssetSource, ChunkSource {
     @POST
     @Path(CHUNK_BY_DESC_PATH)
     @Override
-    Optional<Chunk> retrieveChunk(Description chunkDescription);
+    Optional<Chunk> retrieveChunk(ChunkMetadata chunkMetadata);
 
+    /*
     @POST
     @Path(CHUNKS_BY_TRAITS_PATH)
     @Override
     Stream<Chunk> findChunksByTraits(Trait... traits);
+    */
 }

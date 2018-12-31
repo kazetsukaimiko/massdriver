@@ -1,47 +1,33 @@
 package com.nsnc.massdriver.chunk;
 
-import java.nio.ByteBuffer;
-
-import com.nsnc.massdriver.Description;
+import com.nsnc.massdriver.Trait;
 import com.nsnc.massdriver.crypt.CryptUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Created by luna on 8/1/17.
  * MemoryChunk - A Chunk which is completely loaded into Memory.
  *
  */
-public class MemoryChunk extends BaseChunk {
-    @Override
-    public Description getDescription() {
-        if (description == null) {
-            description = CryptUtils.makeDescription(getData());
-        }
-        return description;
-    }
+public class MemoryChunk extends Chunk {
 
-    public MemoryChunk(ByteBuffer byteBuffer, long position, Description description) {
-        setData(byteBuffer);
-        setPosition(position);
-        setDescription(description);
-    }
-
-    public MemoryChunk(Chunk chunk) {
-        setData(chunk.getData());
-        setPosition(chunk.getPosition());
-        setDescription(chunk.getDescription());
+    public MemoryChunk(ChunkMetadata chunkMetadata, ByteBuffer byteBuffer) {
+        super(chunkMetadata, byteBuffer);
     }
 
     /**
-     * Lazily Make the Description
-     * @param byteBuffer
-     * @param position
+     * Last-minute description generator for speed
+     * @return
      */
-    public MemoryChunk(ByteBuffer byteBuffer, long position) {
-        setData(byteBuffer);
-        setPosition(position);
+    @Override
+    public List<Trait> getTraits() {
+        if (super.getTraits() == null || super.getTraits().isEmpty()) {
+            setTraits(CryptUtils.makeDescription(getData()));
+        }
+        return super.getTraits();
     }
 
-    public MemoryChunk() {
-
-    }
 }

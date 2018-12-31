@@ -65,10 +65,14 @@ public class KeyPair {
 		this.publicKey = publicKey;
 	}
 
+	public String toHash() {
+		return String.join(":",
+				algorithm, CryptUtils.hash("SHA-256", String.valueOf(publicKey+privateKey).getBytes())
+		);
+	}
+
 	@Override
 	public String toString() {
-		return String.join("-",
-				algorithm, publicKey, privateKey
-		);
+		return toHash();
 	}
 }

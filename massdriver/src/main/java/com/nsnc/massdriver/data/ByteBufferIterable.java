@@ -19,7 +19,7 @@ public class ByteBufferIterable implements Iterable<ByteBuffer> {
 		try {
 			return new ByteBufferIterator(path, size, chunksize);
 		} catch (IOException e) {
-			throw new RuntimeException("Could not create ByteBufferIterator", e);
+			throw new RuntimeException("Could not saveIndex ByteBufferIterator", e);
 		}
 	}
 

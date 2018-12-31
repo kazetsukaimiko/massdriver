@@ -1,12 +1,14 @@
 package com.nsnc.massdriver;
 
+import java.util.List;
+
 public class Sequence {
     private long position;
-    private Description last;
-    private Description current;
-    private Description next;
+    private List<Trait> last;
+    private List<Trait> current;
+    private List<Trait> next;
 
-    public Sequence(long position, Description last, Description current, Description next) {
+    public Sequence(long position, List<Trait> last, List<Trait> current, List<Trait> next) {
         this.position = position;
         this.last = last;
         this.current = current;
@@ -24,27 +26,27 @@ public class Sequence {
         this.position = position;
     }
 
-    public Description getLast() {
+    public List<Trait> getLast() {
         return last;
     }
 
-    public void setLast(Description last) {
+    public void setLast(List<Trait> last) {
         this.last = last;
     }
 
-    public Description getCurrent() {
+    public List<Trait> getCurrent() {
         return current;
     }
 
-    public void setCurrent(Description current) {
+    public void setCurrent(List<Trait> current) {
         this.current = current;
     }
 
-    public Description getNext() {
+    public List<Trait> getNext() {
         return next;
     }
 
-    public void setNext(Description next) {
+    public void setNext(List<Trait> next) {
         this.next = next;
     }
 }
