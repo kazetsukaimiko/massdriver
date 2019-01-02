@@ -1,0 +1,47 @@
+
+description = 'Massdriver'
+dependencies {
+    // URN Processing
+    compile group: 'com.jcabi', name: 'jcabi-urn', version:'0.9'
+
+    // Couch
+    compile group: 'com.couchbase.lite', name: 'couchbase-lite-java', version:'1.4.0'
+
+    // TODO: Separate out Nitrite and Mongo Drivers
+
+    // Nitrite
+    compile group: 'org.dizitart', name: 'nitrite', version:'3.1.0'
+
+    // Mongo
+    compile group: 'org.mongodb', name: 'mongodb-driver', version: '3.9.1'
+    
+    // JEE
+    compile group: 'javax', name: 'javaee-api', version: '8.0'
+    compile group: 'org.reflections', name: 'reflections', version:'0.9.11'
+    compile group: 'io.undertow', name: 'undertow-core', version:'2.0.9.Final'
+    compile group: 'org.jboss.weld', name: 'weld-core', version:'2.4.7.Final'
+    compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version:'2.4.7.Final'
+    //compile group: 'org.jboss.resteasy', name: 'resteasy-web', version:'3.5.1.Final'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-jaxb-provider', version:'3.5.1.Final'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-servlet-initializer', version:'3.5.1.Final'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-undertow', version:'3.5.1.Final'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-cdi', version:'3.5.1.Final'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-jackson2-provider', version:'3.5.1.Final'
+
+    // JSON
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.9.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.5'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version:'2.9.5'
+
+    // Testing
+    String junitVersion = "5.3.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

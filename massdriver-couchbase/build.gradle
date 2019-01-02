@@ -1,0 +1,19 @@
+
+description = 'Massdriver CouchBase Lite Driver'
+dependencies {
+    // URN Processing
+    compile project(':massdriver-api')
+
+    // Couch
+    compile group: 'com.couchbase.lite', name: 'couchbase-lite-java', version:'1.4.0'
+
+    String junitVersion = "5.3.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

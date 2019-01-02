@@ -1,8 +1,17 @@
 rootProject.name = 'collection'
-include ':massdriver'
-include ':massdriver-fuse'
-include ':node'
 
-project(':massdriver').projectDir = "$rootDir/massdriver" as File
+include ':massdriver-api'
+include ':massdriver-bytesink'
+include ':massdriver-undertow'
+include ':massdriver-fuse'
+
+include ':massdriver-mongo'
+include ':massdriver-nitrite'
+
+project(':massdriver-api').projectDir = "$rootDir/massdriver-api" as File
+project(':massdriver-bytesink').projectDir = "$rootDir/massdriver-bytesink" as File
+project(':massdriver-undertow').projectDir = "$rootDir/massdriver-undertow" as File
 project(':massdriver-fuse').projectDir = "$rootDir/massdriver-fuse" as File
-project(':node').projectDir = "$rootDir/node" as File
+
+project(':massdriver-mongo').projectDir = "$rootDir/massdriver-mongo" as File
+project(':massdriver-nitrite').projectDir = "$rootDir/massdriver-nitrite" as File

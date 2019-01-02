@@ -1,12 +1,12 @@
 
-description = 'Massdriver FUSE'
+description = 'Massdriver FUSE Interface'
 dependencies {
-  compile project(':massdriver')
+  compile project(':massdriver-api')
     compile group: 'com.github.serceman', name: 'jnr-fuse', version:'0.4.1'
 
     String junitVersion = "5.3.1"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
-    testCompile project(':massdriver').sourceSets.test.output
+    testCompile project(':massdriver-api').sourceSets.test.output
 }

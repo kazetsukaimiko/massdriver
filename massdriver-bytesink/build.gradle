@@ -1,0 +1,16 @@
+
+description = 'Massdriver ByteSink Driver'
+dependencies {
+    // URN Processing
+    compile project(':massdriver-api')
+
+    String junitVersion = "5.3.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests
